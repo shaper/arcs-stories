@@ -149,7 +149,7 @@ defineParticle(({ DomParticle }) => {
         let particleRef = this;
         // TODO(wkorman): Replace this with our own hosted dictionary.
         const dictionaryName =
-          'https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt';
+          'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/american-english.txt';
         info(`Loading dictionary [name=${dictionaryName}].`);
         fetch(dictionaryName).then(response =>
           response.text().then(text => {
