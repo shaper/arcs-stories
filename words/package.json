@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "test": "mocha-chrome index.test.html"
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "mocha-chrome": "^1.0.1"
+  }
+}
