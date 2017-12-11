@@ -10,7 +10,7 @@ import 'MovePicker.manifest'
 
 recipe
   use #user as person
-  create #board #nosync as board
+  create #board as board
   create #move as move
   BoardGenerator
     board = board
