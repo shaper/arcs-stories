@@ -65,7 +65,6 @@ defineParticle(({ DomParticle }) => {
       return template;
     }
     _willReceiveProps(props, state) {
-      info('willReceiveProps', props, state);
       if (!state.board) this._generateBoard();
     }
     _pickCharWithFrequencies() {
