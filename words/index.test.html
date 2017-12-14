@@ -17,7 +17,18 @@ http://polymer.github.io/PATENTS.txt
 <script src="./node_modules/chai/chai.js"></script>
 <script src="./node_modules/mocha/mocha.js"></script>
 <script>mocha.setup('bdd')</script>
-<!-- TODO(wkorman): Fancy tests go here. -->
+
+<script src="./source/Dictionary.js"></script>
+<script src="./test/dictionary-test.js"></script>
+
+<script src="./source/LetterBoard.js"></script>
+<script src="./test/letterboard-test.js"></script>
+
+<script src="./source/Tile.js"></script>
+<script src="./test/tile-test.js"></script>
+
+<script src="./source/TileBoard.js"></script>
+<script src="./test/tileboard-test.js"></script>
 <script>
 mocha.checkLeaks();
 mocha.run();

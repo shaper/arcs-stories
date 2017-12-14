@@ -9,7 +9,12 @@
  */
 'use strict';
 
-defineParticle(({ DomParticle }) => {
+defineParticle(({ DomParticle, resolver }) => {
+  importScripts(resolver('MovePicker/Dictionary.js'));
+  importScripts(resolver('MovePicker/LetterBoard.js'));
+  importScripts(resolver('MovePicker/Tile.js'));
+  importScripts(resolver('MovePicker/TileBoard.js'));
+
   const host = `move-picker`;
 
   const styles = `
@@ -66,10 +71,6 @@ defineParticle(({ DomParticle }) => {
  </template>
       `.trim();
 
-  // TODO(wkorman): Share these with board generator somehow.
-  const BOARD_HEIGHT = 7;
-  const BOARD_WIDTH = 7;
-
   // Selected words must be at least this long for submission.
   const MINIMUM_WORD_LENGTH = 3;
 
@@ -116,76 +117,6 @@ defineParticle(({ DomParticle }) => {
     `background: #ff69b4; color: white; padding: 1px 6px 2px 7px; border-radius: 6px;`
   );
 
-  // A specific tile on the board with an index, position and character.
-  class Tile {
-    constructor(charIndex, board) {
-      this._charIndex = charIndex;
-      this._letter = board.letters[charIndex];
-      this._x = charIndex % BOARD_WIDTH;
-      this._y = Math.floor(charIndex / BOARD_HEIGHT);
-    }
-    get charIndex() {
-      return this._charIndex;
-    }
-    get letter() {
-      return this._letter;
-    }
-    get x() {
-      return this._x;
-    }
-    get y() {
-      return this._y;
-    }
-    get toString() {
-      return `[charIndex=${this.charIndex}, letter=${this.letter}, x=${
-        this.x
-      }, y=${this.y}]`;
-    }
-  }
-
-  class TileBoard {
-    constructor(board) {
-      this._rows = [];
-      let colCount = 0;
-      let rowCount = 0;
-      for (let i = 0; i < board.letters.length; i++) {
-        if (colCount == 0) this._rows.push([]);
-        this._rows[rowCount][colCount] = new Tile(i, board);
-        if (colCount == BOARD_WIDTH - 1) {
-          colCount = 0;
-          rowCount++;
-        } else {
-          colCount++;
-        }
-      }
-    }
-    get toString() {
-      return this._rows.map(r => r.map(c => c.letter).join('')).join('');
-    }
-  }
-
-  // A simple dictionary class to encapsulate the set of words that are
-  // considered valid for game purposes.
-  class Dictionary {
-    // Expects words to be provided as a return-delimited string.
-    constructor(words) {
-      // TODO(wkorman): Use a trie for better memory efficiency and ship a
-      // more compact dictionary representation over the wire. Also, strip
-      // proper nouns and words with apostrophes.
-      this._dict = new Set();
-      for (const wordEntry of words.split('\n')) {
-        const trimmedWord = wordEntry.trim();
-        if (trimmedWord.length > 0) this._dict.add(trimmedWord);
-      }
-    }
-    contains(word) {
-      return this._dict.has(word);
-    }
-    get size() {
-      return this._dict.size;
-    }
-  }
-
   return class extends DomParticle {
     get template() {
       return template;
@@ -217,7 +148,8 @@ defineParticle(({ DomParticle }) => {
         let parts = tuples[i].split(',');
         let x = parseInt(parts[0]);
         let y = parseInt(parts[1]);
-        tiles.push(new Tile(y * BOARD_WIDTH + x, board));
+        let charIndex = y * BOARD_WIDTH + x;
+        tiles.push(new Tile(charIndex, board.letters[charIndex]));
       }
       return tiles;
     }
@@ -266,6 +198,9 @@ defineParticle(({ DomParticle }) => {
       let moveTiles = this._moveToTiles(props.board, props.move);
       let score = 0;
       let board = props.board.letters;
+      // TODO(wkorman): Create tile board in willReceiveProps and use it
+      // elsewhere as well.
+      let tileBoard = new TileBoard(props.board);
       if (state.moveSubmitted) {
         if (moveTiles.length < MINIMUM_WORD_LENGTH) {
           info('Word is too short.');
@@ -273,30 +208,31 @@ defineParticle(({ DomParticle }) => {
           const word = this._tilesToWord(moveTiles);
           let isInDictionary = state.dictionary.contains(word);
           score = this._wordScore(moveTiles);
-          // TODO(wkorman): Create tile board in willReceiveProps and use it
-          // elsewhere as well.
-          let tileBoard = new TileBoard(props.board);
           info(
             `Processing word submission [word=${word}, valid=${isInDictionary}, score=${score}].`
           );
-          // TODO(wkorman): Remove the submitted tiles, shift down those above,
-          // and generate new ones for the empty spaces.
+          tileBoard.applyMove(moveTiles);
+          // info(`Post-submit tile board: ${tileBoard.toString}.`);
         }
-
         moveData = { coordinates: '' };
         moveTiles = [];
       }
-      return [moveData, moveTiles, score];
+      return [tileBoard, moveData, moveTiles, score];
     }
     _willReceiveProps(props, state) {
       // info('willReceiveProps [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
       if (!props.board || !state.dictionary) return;
-      let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
-        props,
-        state
-      );
+      // TODO(wkorman): Fix this to incorporate the board which may have
+      // been updated by the move submission processing.
+      let [
+        tileBoard,
+        moveData,
+        moveTiles,
+        moveScore
+      ] = this._processSubmittedMove(props, state);
       let boardState = Object.assign({}, props.board.rawData);
+      boardState.letters = tileBoard.toString;
       let moveState = Object.assign({}, moveData);
       this._setState({
         board: boardState,
@@ -352,8 +288,8 @@ defineParticle(({ DomParticle }) => {
       );
     }
     _onTileClicked(e, state) {
-      let tile = new Tile(e.data.value, state.board);
       let charIndex = e.data.value;
+      let tile = new Tile(charIndex, state.board.letters[charIndex]);
       let lastSelectedTile =
         state.selectedTiles.length == 0
           ? undefined
