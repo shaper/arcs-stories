@@ -22,13 +22,8 @@ defineParticle(({ DomParticle, resolver }) => {
    [${host}] {
      padding: 5px;
    }
-   [${host}] .boardWrapper {
+   [${host}] .board {
      cursor: pointer;
-     display: grid;
-     grid-template-columns: repeat(7, 50px);
-     grid-gap: 1px;
-     align-items: center;
-     justify-items: center;
      user-select: none;
    }
    [${host}] .score,
@@ -39,17 +34,32 @@ defineParticle(({ DomParticle, resolver }) => {
    [${host}] .gameInfo {
      padding-bottom: 0.5em;
    }
-   [${host}] .boardWrapper div {
+   [${host}] .board {
+     height: 356px;
+     width: 356px;
+     position: relative;
+   }
+   [${host}] .board .tile {
      background-color: wheat;
      border-radius: 3px;
      color: brown;
+     display: inline-block;
      text-align: center;
      font: sans-serif;
      line-height: 50px;
      width: 50px;
      height: 50px;
+     margin: 1px;
+     position: absolute;
    }
-   [${host}] .boardWrapper div.selected {
+   [${host}] .board .points {
+     position: absolute;
+     font-size: 0.8em;
+     line-height: normal;
+     top: 0.1em;
+     right: 0.2em;
+   }
+   [${host}] .board .selected {
      background-color: goldenrod;
      color: white;
    }
@@ -64,10 +74,12 @@ defineParticle(({ DomParticle, resolver }) => {
      <div class="move">Move: <span>{{move}}</span></div>
      <div><button on-click="_onSubmitMove">Submit Move</button></div>
    </div>
-   <div class="boardWrapper">{{boardCells}}</div>
+   <div class="board">{{boardCells}}</div>
  </div>
  <template board-cell>
-   <div class="{{classes}}" on-click="_onTileClicked" value="{{index}}">{{letter}}</div>
+   <div class="{{classes}}" style%="{{style}}" on-click="_onTileClicked" value="{{index}}">
+     <span>{{letter}}</span><div class="points">{{points}}</div>
+   </div>
  </template>
       `.trim();
 
@@ -127,12 +139,14 @@ defineParticle(({ DomParticle, resolver }) => {
       for (let i = 0; i < board.length; i++) {
         let x = i % BOARD_WIDTH;
         let y = Math.floor(i / BOARD_WIDTH);
-        let letterClasses = [];
+        let letterClasses = ['tile'];
         if (coordinates.indexOf(`(${x},${y})`) != -1)
           letterClasses.push('selected');
         models.push({
           letter: board[i],
+          points: CHAR_SCORE[board[i]],
           index: i,
+          style: `top: ${y * 50 + y}px; left: ${x * 50 + x}px;`,
           classes: letterClasses.join(' ')
         });
       }
@@ -212,19 +226,26 @@ defineParticle(({ DomParticle, resolver }) => {
             `Processing word submission [word=${word}, valid=${isInDictionary}, score=${score}].`
           );
           tileBoard.applyMove(moveTiles);
-          // info(`Post-submit tile board: ${tileBoard.toString}.`);
+          this._setBoard(tileBoard.toString);
         }
+        this._setMove('');
         moveData = { coordinates: '' };
         moveTiles = [];
       }
       return [tileBoard, moveData, moveTiles, score];
     }
+    _generateBoard() {
+      info('Generating board.');
+      let boardChars = [];
+      for (let i = 0; i < TILE_COUNT; i++)
+        boardChars.push(LetterBoard.pickCharWithFrequencies());
+      this._setBoard(boardChars);
+    }
     _willReceiveProps(props, state) {
-      // info('willReceiveProps [props=', props, 'state=', state, '].');
+      info('willReceiveProps [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
-      if (!props.board || !state.dictionary) return;
-      // TODO(wkorman): Fix this to incorporate the board which may have
-      // been updated by the move submission processing.
+      if (!props.board) this._generateBoard();
+      if (!state.dictionary) return;
       let [
         tileBoard,
         moveData,
@@ -243,6 +264,7 @@ defineParticle(({ DomParticle, resolver }) => {
       });
     }
     _render(props, state) {
+      info('render [props=', props, 'state=', state, '].');
       if (!state.board || !state.move) return {};
       let boardModels = this._boardToModels(
         state.board.letters,
@@ -335,10 +357,18 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _onSubmitMove(e, state) {
       info(`Submitting move [coordinates=${state.move.coordinates}].`);
-      let newMove = Object.assign({}, { coordinates: state.move.coordinates });
+      this._setMove(state.move.coordinates);
+      this._setState({ moveSubmitted: true });
+    }
+    _setMove(newCoordinates) {
+      let newMove = Object.assign({}, { coordinates: newCoordinates });
       const move = this._views.get('move');
       move.set(new move.entityClass(newMove));
-      this._setState({ moveSubmitted: true });
+    }
+    _setBoard(newLetters) {
+      let newBoard = Object.assign({}, { letters: newLetters });
+      const board = this._views.get('board');
+      board.set(new board.entityClass(newBoard));
     }
   };
 });

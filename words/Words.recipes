@@ -12,9 +12,7 @@ recipe
   use #user as person
   create #board as board
   create #move as move
-  BoardGenerator
-    board = board
   MovePicker
     move = move
-    board <- board
+    board = board
     person <- person
