@@ -27,7 +27,8 @@ defineParticle(({ DomParticle, resolver }) => {
      user-select: none;
    }
    [${host}] .score,
-   [${host}] .move  {
+   [${host}] .move,
+   [${host}] .moveScore {
      font-size: 1.2em;
      font-variant-caps: all-small-caps;
    }
@@ -72,6 +73,7 @@ defineParticle(({ DomParticle, resolver }) => {
    <div class="gameInfo">
      <div class="score">Score: <span>{{score}}</span></div>
      <div class="move">Move: <span>{{move}}</span></div>
+     <div class="moveScore">Move score: <span>{{moveScore}}</span></div>
      <div><button on-click="_onSubmitMove">Submit Move</button></div>
    </div>
    <div class="board">{{boardCells}}</div>
@@ -216,17 +218,19 @@ defineParticle(({ DomParticle, resolver }) => {
       // elsewhere as well.
       let tileBoard = new TileBoard(props.board);
       if (state.moveSubmitted) {
+        const word = this._tilesToWord(moveTiles);
         if (moveTiles.length < MINIMUM_WORD_LENGTH) {
-          info('Word is too short.');
+          info(`Word is too short [word=${word}].`);
         } else {
-          const word = this._tilesToWord(moveTiles);
           let isInDictionary = state.dictionary.contains(word);
-          score = this._wordScore(moveTiles);
-          info(
-            `Processing word submission [word=${word}, valid=${isInDictionary}, score=${score}].`
-          );
-          tileBoard.applyMove(moveTiles);
-          this._setBoard(tileBoard.toString);
+          if (!isInDictionary) {
+            info(`Word is not in dictionary [word=${word}].`);
+          } else {
+            info(`Scoring word [word=${word}, score=${score}].`);
+            tileBoard.applyMove(moveTiles);
+            this._setBoard(tileBoard.toString);
+            score = this._wordScore(moveTiles);
+          }
         }
         this._setMove('');
         moveData = { coordinates: '' };
@@ -242,7 +246,7 @@ defineParticle(({ DomParticle, resolver }) => {
       this._setBoard(boardChars);
     }
     _willReceiveProps(props, state) {
-      info('willReceiveProps [props=', props, 'state=', state, '].');
+      // info('willReceiveProps [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
       if (!props.board) this._generateBoard();
       if (!state.dictionary) return;
@@ -259,12 +263,13 @@ defineParticle(({ DomParticle, resolver }) => {
         board: boardState,
         move: moveState,
         selectedTiles: moveTiles,
+        moveScore: this._wordScore(moveTiles),
         score: (state.score || 0) + moveScore,
         moveSubmitted: false
       });
     }
     _render(props, state) {
-      info('render [props=', props, 'state=', state, '].');
+      // info('render [props=', props, 'state=', state, '].');
       if (!state.board || !state.move) return {};
       let boardModels = this._boardToModels(
         state.board.letters,
@@ -276,7 +281,8 @@ defineParticle(({ DomParticle, resolver }) => {
           models: boardModels
         },
         move: state.move.coordinates,
-        score: state.score
+        score: state.score,
+        moveScore: state.moveScore
       };
     }
     _tileArrayContainsTile(tileArray, tile) {

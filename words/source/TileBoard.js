@@ -29,7 +29,7 @@ var TileBoard = class {
     // Destroy tiles in the move.
     for (let t = 0; t < tiles.length; t++) {
       const currentTile = tiles[t];
-      TileBoard.info(`Destroying tile [tile=${currentTile.toString}].`);
+      // TileBoard.info(`Destroying tile [tile=${currentTile.toString}].`);
       this._rows[currentTile.y][currentTile.x] = null;
     }
 
