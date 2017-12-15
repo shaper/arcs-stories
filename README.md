@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/shaper/arcs-stories)](https://travis-ci.org/shaper/arcs-stories)
+[![Build Status](https://travis-ci.org/shaper/arcs-stories.svg?branch=master)](https://travis-ci.org/shaper/arcs-stories)
 
 # arcs-stories
 
