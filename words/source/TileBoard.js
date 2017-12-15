@@ -69,10 +69,7 @@ var TileBoard = class {
     return this._rows[Math.floor(index / BOARD_WIDTH)][index % BOARD_WIDTH];
   }
   _tileArrayContainsTile(tileArray, tile) {
-    for (let i = 0; i < tileArray.length; i++) {
-      if (tileArray[i].x == tile.x && tileArray[i].y == tile.y) return true;
-    }
-    return false;
+    return tileArray.find(t => t.x == tile.x && t.y == tile.y);
   }
   isMoveValid(move, selectedTiles, tile) {
     // Initial moves are considered valid.

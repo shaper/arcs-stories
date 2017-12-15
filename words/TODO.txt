@@ -1,9 +1,6 @@
-1 use new Number type in schema
-1 persist score
+1 use new Number type in schema for move
 1 build leaderboard of scores
-1 show arrows on selected tiles
 
 2 support ending game and starting a new one
-2 get moveScore to display
 
 3 rework board to allow mouse-drag highlighting and animations

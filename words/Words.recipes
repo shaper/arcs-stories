@@ -11,7 +11,9 @@ recipe
   use #user as person
   create #board as board
   create #move as move
+  create #stats as stats
   MovePicker
     move = move
     board = board
+    stats = stats
     person <- person

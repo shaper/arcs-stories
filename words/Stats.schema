@@ -6,9 +6,14 @@
 # subject to an additional IP rights grant found at
 # http://polymer.github.io/PATENTS.txt
 
-schema Move
+schema Stats
   normative
-    # A string list of tuples as [(x1, y1), (x2, y2)] representing the
-    # contiguous characters selected by the user for the move.
-    # TODO(wkorman): Change this to use Number.
-    Text coordinates
+    Number score
+    Number moveCount
+    # TODO(wkorman): Add these additional metrics:
+    # Game start timestamp
+    # Game end timestamp
+    # Longest word (text)
+    # Longest word (score)
+    # Highest scoring word (text)
+    # Highest scoring word (score)

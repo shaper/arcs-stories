@@ -27,8 +27,7 @@ defineParticle(({ DomParticle, resolver }) => {
      user-select: none;
    }
    [${host}] .score,
-   [${host}] .move,
-   [${host}] .moveScore {
+   [${host}] .move {
      font-size: 1.2em;
      font-variant-caps: all-small-caps;
    }
@@ -64,6 +63,9 @@ defineParticle(({ DomParticle, resolver }) => {
      background-color: goldenrod;
      color: white;
    }
+   [${host}] .board .annotation {
+     position: absolute;
+   }
  </style>
    `;
 
@@ -73,15 +75,17 @@ defineParticle(({ DomParticle, resolver }) => {
    <div class="gameInfo">
      <div class="score">Score: <span>{{score}}</span></div>
      <div class="move">Move: <span>{{move}}</span></div>
-     <div class="moveScore">Move score: <span>{{moveScore}}</span></div>
      <div><button on-click="_onSubmitMove">Submit Move</button></div>
    </div>
-   <div class="board">{{boardCells}}</div>
+   <div class="board"><span>{{boardCells}}</span><span>{{annotations}}</span></div>
  </div>
  <template board-cell>
    <div class="{{classes}}" style%="{{style}}" on-click="_onTileClicked" value="{{index}}">
      <span>{{letter}}</span><div class="points">{{points}}</div>
    </div>
+ </template>
+ <template annotation>
+   <div class="annotation" style%="{{style}}">{{content}}</div>
  </template>
       `.trim();
 
@@ -136,7 +140,6 @@ defineParticle(({ DomParticle, resolver }) => {
       this._setState({ dictionaryLoadingStarted: true });
       let particleRef = this;
       let startstamp = performance.now();
-      info(`Loading dictionary [url=${DICTIONARY_URL}].`);
       fetch(DICTIONARY_URL).then(response =>
         response.text().then(text => {
           let dictionaryState = new Dictionary(text);
@@ -173,6 +176,10 @@ defineParticle(({ DomParticle, resolver }) => {
             score = Scoring.wordScore(moveTiles);
             info(`Scoring word [word=${word}, score=${score}].`);
             tileBoard.applyMove(moveTiles);
+            this._setStats(
+              props.stats.score + score,
+              props.stats.moveCount + 1
+            );
             this._setBoard(tileBoard.toString);
           }
         }
@@ -183,16 +190,19 @@ defineParticle(({ DomParticle, resolver }) => {
       return [moveData, moveTiles, score];
     }
     _generateBoard() {
-      info('Generating board.');
-      let boardChars = [];
+      let boardChars = '';
       for (let i = 0; i < TILE_COUNT; i++)
-        boardChars.push(TileBoard.pickCharWithFrequencies());
+        boardChars += TileBoard.pickCharWithFrequencies();
       this._setBoard(boardChars);
+    }
+    _generateStats() {
+      this._setStats(0, 0);
     }
     _willReceiveProps(props, state) {
       // info('willReceiveProps [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
       if (!props.board) this._generateBoard();
+      if (!props.stats) this._generateStats();
       if (!state.dictionary) return;
       let tileBoardState = new TileBoard(props.board);
       let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
@@ -206,9 +216,52 @@ defineParticle(({ DomParticle, resolver }) => {
         move: moveState,
         selectedTiles: moveTiles,
         moveScore: Scoring.wordScore(moveTiles),
-        score: (state.score || 0) + moveScore,
+        score: props.stats.score,
         moveSubmitted: false
       });
+    }
+    _tileTransitionToTextAndPosition(fromTile, toTile) {
+      // A sad hard-coded pixel positioned hack. Rework to use alignment with
+      // the involved tile position.
+      let contentText, positionText;
+      if (toTile.x > fromTile.x) {
+        contentText = '→';
+        let tilesFromRight = BOARD_WIDTH - fromTile.x - 1;
+        positionText = `top: ${fromTile.y * 50 +
+          18 +
+          fromTile.y}px; right: ${tilesFromRight * 50 + tilesFromRight - 9}px;`;
+      } else if (toTile.x < fromTile.x) {
+        contentText = '←';
+        positionText = `top: ${fromTile.y * 50 +
+          18 +
+          fromTile.y}px; left: ${fromTile.x * 50 + fromTile.x - 9}px;`;
+      } else if (toTile.y > fromTile.y) {
+        contentText = '↓';
+        positionText = `top: ${(fromTile.y + 1) * 50 -
+          7 +
+          fromTile.y}px; left: ${fromTile.x * 50 + fromTile.x + 22}px;`;
+      } else {
+        contentText = '↑';
+        positionText = `top: ${fromTile.y * 50 -
+          9 +
+          fromTile.y}px; left: ${fromTile.x * 50 + fromTile.x + 22}px;`;
+      }
+      return [contentText, positionText];
+    }
+    _selectedTilesToModels(selectedTiles) {
+      let models = [];
+      if (selectedTiles.length < 2) return models;
+      for (let i = 0; i < selectedTiles.length - 1; i++) {
+        let [contentText, positionText] = this._tileTransitionToTextAndPosition(
+          selectedTiles[i],
+          selectedTiles[i + 1]
+        );
+        models.push({
+          style: positionText,
+          content: contentText
+        });
+      }
+      return models;
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
@@ -217,14 +270,20 @@ defineParticle(({ DomParticle, resolver }) => {
         state.tileBoard,
         state.move.coordinates
       );
+      let annotationModels = this._selectedTilesToModels(state.selectedTiles);
+      const word = this._tilesToWord(state.selectedTiles);
+      const moveText = `${word} (${Scoring.wordScore(state.selectedTiles)})`;
       return {
+        annotations: {
+          $template: 'annotation',
+          models: annotationModels
+        },
         boardCells: {
           $template: 'board-cell',
           models: boardModels
         },
-        move: state.move.coordinates,
-        score: state.score,
-        moveScore: state.moveScore
+        move: moveText,
+        score: `${state.score} (${props.stats.moveCount} moves)`
       };
     }
     _onTileClicked(e, state) {
@@ -233,11 +292,11 @@ defineParticle(({ DomParticle, resolver }) => {
         state.selectedTiles.length == 0
           ? undefined
           : state.selectedTiles[state.selectedTiles.length - 1];
-      info(
-        `_onTileClicked [tile=${tile.toString}, lastSelectedTile=${
-          lastSelectedTile ? lastSelectedTile.toString : 'undefined'
-        }].`
-      );
+      // info(
+      //   `_onTileClicked [tile=${tile.toString}, lastSelectedTile=${
+      //     lastSelectedTile ? lastSelectedTile.toString : 'undefined'
+      //   }].`
+      // );
       if (!state.tileBoard.isMoveValid(state.move, state.selectedTiles, tile)) {
         info(`Ignoring selection of invalid tile [tile=${tile.toString}].`);
         return;
@@ -272,7 +331,6 @@ defineParticle(({ DomParticle, resolver }) => {
       });
     }
     _onSubmitMove(e, state) {
-      info(`Submitting move [coordinates=${state.move.coordinates}].`);
       this._setMove(state.move.coordinates);
       this._setState({ moveSubmitted: true });
     }
@@ -285,6 +343,14 @@ defineParticle(({ DomParticle, resolver }) => {
       let newBoard = Object.assign({}, { letters: newLetters });
       const board = this._views.get('board');
       board.set(new board.entityClass(newBoard));
+    }
+    _setStats(newScore, newMoveCount) {
+      let newStats = Object.assign(
+        {},
+        { score: newScore, moveCount: newMoveCount }
+      );
+      const stats = this._views.get('stats');
+      stats.set(new stats.entityClass(newStats));
     }
   };
 });
