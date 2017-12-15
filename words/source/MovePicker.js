@@ -11,7 +11,6 @@
 
 defineParticle(({ DomParticle, resolver }) => {
   importScripts(resolver('MovePicker/Dictionary.js'));
-  importScripts(resolver('MovePicker/LetterBoard.js'));
   importScripts(resolver('MovePicker/Tile.js'));
   importScripts(resolver('MovePicker/TileBoard.js'));
 
@@ -226,10 +225,10 @@ defineParticle(({ DomParticle, resolver }) => {
           if (!isInDictionary) {
             info(`Word is not in dictionary [word=${word}].`);
           } else {
+            score = this._wordScore(moveTiles);
             info(`Scoring word [word=${word}, score=${score}].`);
             tileBoard.applyMove(moveTiles);
             this._setBoard(tileBoard.toString);
-            score = this._wordScore(moveTiles);
           }
         }
         this._setMove('');
@@ -242,7 +241,7 @@ defineParticle(({ DomParticle, resolver }) => {
       info('Generating board.');
       let boardChars = [];
       for (let i = 0; i < TILE_COUNT; i++)
-        boardChars.push(LetterBoard.pickCharWithFrequencies());
+        boardChars.push(TileBoard.pickCharWithFrequencies());
       this._setBoard(boardChars);
     }
     _willReceiveProps(props, state) {
