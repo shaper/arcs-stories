@@ -9,6 +9,62 @@ var assert = chai.assert;
 
 describe('TileBoard', function() {
   const savePickCharWithFrequencies = TileBoard.pickCharWithFrequencies;
+
+  function createDefaultBoard() {
+    return new TileBoard({
+      letters:
+        'ABCDEFG' +
+        'HIJKLMN' +
+        'OPQRSTU' +
+        'VWXYZAB' +
+        'CDEFGHI' +
+        'JKLMNOP' +
+        'QRSTUVW'
+    });
+  }
+
+  describe('#size', function() {
+    it('should return the total tile count', function() {
+      assert.equal(createDefaultBoard().size, 49);
+    });
+  });
+
+  describe('#tileAt()', function() {
+    it('should return tiles at specific x/y coordinates', function() {
+      const board = createDefaultBoard();
+      const tile00 = board.tileAt(0, 0);
+      assert.equal(tile00.x, 0);
+      assert.equal(tile00.y, 0);
+      assert.equal(tile00.letter, 'A');
+      const tile35 = board.tileAt(3, 5);
+      assert.equal(tile35.x, 3);
+      assert.equal(tile35.y, 5);
+      assert.equal(tile35.letter, 'M');
+      const tile66 = board.tileAt(6, 6);
+      assert.equal(tile66.x, 6);
+      assert.equal(tile66.y, 6);
+      assert.equal(tile66.letter, 'W');
+    });
+  });
+
+  describe('#tileAtIndex()', function() {
+    it('should return tiles at specific indexes', function() {
+      const board = createDefaultBoard();
+      const tile0 = board.tileAtIndex(0);
+      assert.equal(tile0.x, 0);
+      assert.equal(tile0.y, 0);
+      assert.equal(tile0.letter, 'A');
+      const tile38 = board.tileAtIndex(38);
+      assert.equal(tile38.x, 3);
+      assert.equal(tile38.y, 5);
+      assert.equal(tile38.letter, 'M');
+      const tile48 = board.tileAtIndex(48);
+      assert.equal(tile48.x, 6);
+      assert.equal(tile48.y, 6);
+      assert.equal(tile48.letter, 'W');
+    });
+  });
+
   describe('#applyMove()', function() {
     before(function() {
       TileBoard.pickCharWithFrequencies = () => {
@@ -19,19 +75,6 @@ describe('TileBoard', function() {
     after(function() {
       TileBoard.pickCharWithFrequencies = savePickCharWithFrequencies;
     });
-
-    function createDefaultBoard() {
-      return new TileBoard({
-        letters:
-          'ABCDEFG' +
-          'HIJKLMN' +
-          'OPQRSTU' +
-          'VWXYZAB' +
-          'CDEFGHI' +
-          'JKLMNOP' +
-          'QRSTUVW'
-      });
-    }
 
     it('should destroy tiles at top left corner of board correctly', function() {
       const board = createDefaultBoard();
@@ -209,4 +252,6 @@ describe('TileBoard', function() {
       );
     });
   });
+
+  // TODO(wkorman): Add tests for isMoveValid.
 });

@@ -134,37 +134,35 @@ defineParticle(({ DomParticle, resolver }) => {
     get template() {
       return template;
     }
-    _boardToModels(board, coordinates) {
+    _boardToModels(tileBoard, coordinates) {
       let models = [];
-      // TODO(wkorman): Rework this to use tiles.
-      for (let i = 0; i < board.length; i++) {
-        let x = i % BOARD_WIDTH;
-        let y = Math.floor(i / BOARD_WIDTH);
+      for (let i = 0; i < tileBoard.size; i++) {
+        let tile = tileBoard.tileAtIndex(i);
         let letterClasses = ['tile'];
-        if (coordinates.indexOf(`(${x},${y})`) != -1)
+        if (coordinates.indexOf(`(${tile.x},${tile.y})`) != -1)
           letterClasses.push('selected');
         models.push({
-          letter: board[i],
-          points: CHAR_SCORE[board[i]],
+          letter: tile.letter,
+          points: CHAR_SCORE[tile.letter],
           index: i,
-          style: `top: ${y * 50 + y}px; left: ${x * 50 + x}px;`,
+          style: `top: ${tile.y * 50 + tile.y}px; left: ${tile.x * 50 +
+            tile.x}px;`,
           classes: letterClasses.join(' ')
         });
       }
       return models;
     }
-    _moveToTiles(board, move) {
+    _moveToTiles(tileBoard, move) {
       let tiles = [];
-      if (!board || !move || !move.coordinates) return tiles;
+      if (!tileBoard || !move || !move.coordinates) return tiles;
       // TODO(wkorman): If move coordinates were stored as a list of x/y tuples
       // this would be much simpler.
-      let tuples = move.coordinates.match(/(\d+,\d+)/g);
+      const tuples = move.coordinates.match(/(\d+,\d+)/g);
       for (let i = 0; i < tuples.length; i++) {
-        let parts = tuples[i].split(',');
-        let x = parseInt(parts[0]);
-        let y = parseInt(parts[1]);
-        let charIndex = y * BOARD_WIDTH + x;
-        tiles.push(new Tile(charIndex, board.letters[charIndex]));
+        const parts = tuples[i].split(',');
+        const x = parseInt(parts[0]);
+        const y = parseInt(parts[1]);
+        tiles.push(tileBoard.tileAt(x, y));
       }
       return tiles;
     }
@@ -208,14 +206,10 @@ defineParticle(({ DomParticle, resolver }) => {
         tiles.reduce((accumulator, t) => accumulator + CHAR_SCORE[t.letter], 0)
       );
     }
-    _processSubmittedMove(props, state) {
+    _processSubmittedMove(props, state, tileBoard) {
       let moveData = props.move ? props.move.rawData : { coordinates: '' };
-      let moveTiles = this._moveToTiles(props.board, props.move);
+      let moveTiles = this._moveToTiles(tileBoard, props.move);
       let score = 0;
-      let board = props.board.letters;
-      // TODO(wkorman): Create tile board in willReceiveProps and use it
-      // elsewhere as well.
-      let tileBoard = new TileBoard(props.board);
       if (state.moveSubmitted) {
         const word = this._tilesToWord(moveTiles);
         if (moveTiles.length < MINIMUM_WORD_LENGTH) {
@@ -235,7 +229,7 @@ defineParticle(({ DomParticle, resolver }) => {
         moveData = { coordinates: '' };
         moveTiles = [];
       }
-      return [tileBoard, moveData, moveTiles, score];
+      return [moveData, moveTiles, score];
     }
     _generateBoard() {
       info('Generating board.');
@@ -249,17 +243,15 @@ defineParticle(({ DomParticle, resolver }) => {
       this._ensureDictionaryLoaded(state);
       if (!props.board) this._generateBoard();
       if (!state.dictionary) return;
-      let [
-        tileBoard,
-        moveData,
-        moveTiles,
-        moveScore
-      ] = this._processSubmittedMove(props, state);
-      let boardState = Object.assign({}, props.board.rawData);
-      boardState.letters = tileBoard.toString;
+      let tileBoardState = new TileBoard(props.board);
+      let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
+        props,
+        state,
+        tileBoardState
+      );
       let moveState = Object.assign({}, moveData);
       this._setState({
-        board: boardState,
+        tileBoard: tileBoardState,
         move: moveState,
         selectedTiles: moveTiles,
         moveScore: this._wordScore(moveTiles),
@@ -269,9 +261,9 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
-      if (!state.board || !state.move) return {};
+      if (!state.tileBoard || !state.move) return {};
       let boardModels = this._boardToModels(
-        state.board.letters,
+        state.tileBoard,
         state.move.coordinates
       );
       return {
@@ -284,39 +276,8 @@ defineParticle(({ DomParticle, resolver }) => {
         moveScore: state.moveScore
       };
     }
-    _tileArrayContainsTile(tileArray, tile) {
-      for (let i = 0; i < tileArray.length; i++) {
-        if (tileArray[i].x == tile.x && tileArray[i].y == tile.y) return true;
-      }
-      return false;
-    }
-    _isMoveValid(move, selectedTiles, tile) {
-      // Initial moves are considered valid.
-      if (
-        !move.coordinates ||
-        move.coordinates.length == 0 ||
-        selectedTiles.length == 0
-      )
-        return true;
-      // Selecting the last selected tile is permitted so as to de-select.
-      let lastSelectedTile = selectedTiles[selectedTiles.length - 1];
-      if (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y)
-        return true;
-      // Else the new selection must touch the last selection and can't
-      // already be selected.
-      let touchesLastSelectedTile =
-        (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y - 1) ||
-        (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y + 1) ||
-        (lastSelectedTile.x == tile.x - 1 && lastSelectedTile.y == tile.y) ||
-        (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.y == tile.y);
-      return (
-        touchesLastSelectedTile &&
-        !this._tileArrayContainsTile(selectedTiles, tile)
-      );
-    }
     _onTileClicked(e, state) {
-      let charIndex = e.data.value;
-      let tile = new Tile(charIndex, state.board.letters[charIndex]);
+      const tile = state.tileBoard.tileAtIndex(e.data.value);
       let lastSelectedTile =
         state.selectedTiles.length == 0
           ? undefined
@@ -326,7 +287,7 @@ defineParticle(({ DomParticle, resolver }) => {
           lastSelectedTile ? lastSelectedTile.toString : 'undefined'
         }].`
       );
-      if (!this._isMoveValid(state.move, state.selectedTiles, tile)) {
+      if (!state.tileBoard.isMoveValid(state.move, state.selectedTiles, tile)) {
         info(`Ignoring selection of invalid tile [tile=${tile.toString}].`);
         return;
       }
@@ -355,7 +316,6 @@ defineParticle(({ DomParticle, resolver }) => {
       }
       state.move.coordinates = newCoordinates;
       this._setState({
-        board: state.board,
         move: state.move,
         selectedTiles: state.selectedTiles
       });

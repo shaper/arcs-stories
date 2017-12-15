@@ -59,6 +59,45 @@ var TileBoard = class {
       }
     }
   }
+  get size() {
+    return TILE_COUNT;
+  }
+  tileAt(x, y) {
+    return this._rows[y][x];
+  }
+  tileAtIndex(index) {
+    return this._rows[Math.floor(index / BOARD_WIDTH)][index % BOARD_WIDTH];
+  }
+  _tileArrayContainsTile(tileArray, tile) {
+    for (let i = 0; i < tileArray.length; i++) {
+      if (tileArray[i].x == tile.x && tileArray[i].y == tile.y) return true;
+    }
+    return false;
+  }
+  isMoveValid(move, selectedTiles, tile) {
+    // Initial moves are considered valid.
+    if (
+      !move.coordinates ||
+      move.coordinates.length == 0 ||
+      selectedTiles.length == 0
+    )
+      return true;
+    // Selecting the last selected tile is permitted so as to de-select.
+    let lastSelectedTile = selectedTiles[selectedTiles.length - 1];
+    if (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y)
+      return true;
+    // Else the new selection must touch the last selection and can't
+    // already be selected.
+    let touchesLastSelectedTile =
+      (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y - 1) ||
+      (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y + 1) ||
+      (lastSelectedTile.x == tile.x - 1 && lastSelectedTile.y == tile.y) ||
+      (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.y == tile.y);
+    return (
+      touchesLastSelectedTile &&
+      !this._tileArrayContainsTile(selectedTiles, tile)
+    );
+  }
   applyMove(tiles) {
     // Destroy tiles in the move.
     for (let t = 0; t < tiles.length; t++) {
