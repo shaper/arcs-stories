@@ -11,6 +11,7 @@
 
 defineParticle(({ DomParticle, resolver }) => {
   importScripts(resolver('MovePicker/Dictionary.js'));
+  importScripts(resolver('MovePicker/Scoring.js'));
   importScripts(resolver('MovePicker/Tile.js'));
   importScripts(resolver('MovePicker/TileBoard.js'));
 
@@ -84,43 +85,6 @@ defineParticle(({ DomParticle, resolver }) => {
  </template>
       `.trim();
 
-  // Selected words must be at least this long for submission.
-  const MINIMUM_WORD_LENGTH = 3;
-
-  // Base score points for each character.
-  const CHAR_SCORE = {
-    A: 1,
-    B: 3,
-    C: 3,
-    D: 2,
-    E: 1,
-    F: 2,
-    G: 2,
-    H: 1,
-    I: 1,
-    J: 3,
-    K: 3,
-    L: 2,
-    M: 2,
-    N: 3,
-    O: 1,
-    P: 2,
-    Q: 3,
-    R: 1,
-    S: 1,
-    T: 1,
-    U: 3,
-    V: 3,
-    W: 3,
-    X: 3,
-    Y: 3,
-    Z: 3
-  };
-
-  // Multiplier applied based on word length. Tuples as (length, multiplier).
-  // So 3 character words have no multiplier, 4 is 2x, etc.
-  const WORD_LENGTH_MULTIPLIERS = [[3, 1], [4, 2], [6, 3], [8, 4], [12, 5]];
-
   const DICTIONARY_URL =
     'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/american-english.txt';
 
@@ -143,7 +107,7 @@ defineParticle(({ DomParticle, resolver }) => {
           letterClasses.push('selected');
         models.push({
           letter: tile.letter,
-          points: CHAR_SCORE[tile.letter],
+          points: Scoring.pointsForLetter(tile.letter),
           index: i,
           style: `top: ${tile.y * 50 + tile.y}px; left: ${tile.x * 50 +
             tile.x}px;`,
@@ -193,33 +157,20 @@ defineParticle(({ DomParticle, resolver }) => {
         .join('')
         .toLowerCase();
     }
-    _wordLengthMultiplier(wordLength) {
-      for (let i = 0; i < WORD_LENGTH_MULTIPLIERS.length; i++) {
-        if (wordLength <= WORD_LENGTH_MULTIPLIERS[i][0])
-          return WORD_LENGTH_MULTIPLIERS[i][1];
-      }
-      return WORD_LENGTH_MULTIPLIERS[WORD_LENGTH_MULTIPLIERS.length - 1][1];
-    }
-    _wordScore(tiles) {
-      return (
-        this._wordLengthMultiplier(tiles.length) *
-        tiles.reduce((accumulator, t) => accumulator + CHAR_SCORE[t.letter], 0)
-      );
-    }
     _processSubmittedMove(props, state, tileBoard) {
       let moveData = props.move ? props.move.rawData : { coordinates: '' };
       let moveTiles = this._moveToTiles(tileBoard, props.move);
       let score = 0;
       if (state.moveSubmitted) {
         const word = this._tilesToWord(moveTiles);
-        if (moveTiles.length < MINIMUM_WORD_LENGTH) {
+        if (!Scoring.isMinimumWordLength(moveTiles.length)) {
           info(`Word is too short [word=${word}].`);
         } else {
           let isInDictionary = state.dictionary.contains(word);
           if (!isInDictionary) {
             info(`Word is not in dictionary [word=${word}].`);
           } else {
-            score = this._wordScore(moveTiles);
+            score = Scoring.wordScore(moveTiles);
             info(`Scoring word [word=${word}, score=${score}].`);
             tileBoard.applyMove(moveTiles);
             this._setBoard(tileBoard.toString);
@@ -254,7 +205,7 @@ defineParticle(({ DomParticle, resolver }) => {
         tileBoard: tileBoardState,
         move: moveState,
         selectedTiles: moveTiles,
-        moveScore: this._wordScore(moveTiles),
+        moveScore: Scoring.wordScore(moveTiles),
         score: (state.score || 0) + moveScore,
         moveSubmitted: false
       });

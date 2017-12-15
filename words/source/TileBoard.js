@@ -102,7 +102,6 @@ var TileBoard = class {
     // Destroy tiles in the move.
     for (let t = 0; t < tiles.length; t++) {
       const currentTile = tiles[t];
-      // TileBoard.info(`Destroying tile [tile=${currentTile.toString}].`);
       this._rows[currentTile.y][currentTile.x] = null;
     }
 
@@ -116,11 +115,6 @@ var TileBoard = class {
       while (y >= 0) {
         if (this._rows[y][currentTile.x]) {
           // Move this tile above the destroyed tile down to the next spot.
-          // info(
-          //   `Moving tile down to fill hole [srcX=${
-          //     currentTile.x
-          //   }, srcY=${y}, destY=${nextPlaceY}].`
-          // );
           this._rows[nextPlaceY][currentTile.x] = this._rows[y][currentTile.x];
           this._rows[y][currentTile.x] = null;
           nextPlaceY--;
@@ -130,7 +124,6 @@ var TileBoard = class {
     }
 
     // Generate new tiles for the empty spaces that remain.
-    // TODO(wkorman): Reuse logic in BoardGenerator somehow.
     for (let t = 0; t < tiles.length; t++) {
       const currentTile = tiles[t];
       for (let y = currentTile.y; y >= 0; y--) {
