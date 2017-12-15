@@ -8,16 +8,16 @@
 var assert = chai.assert;
 
 describe('TileBoard', function() {
-  const savePickCharWithFrequencies = LetterBoard.pickCharWithFrequencies;
+  const savePickCharWithFrequencies = TileBoard.pickCharWithFrequencies;
   describe('#applyMove()', function() {
     before(function() {
-      LetterBoard.pickCharWithFrequencies = () => {
+      TileBoard.pickCharWithFrequencies = () => {
         return '=';
       };
     });
 
     after(function() {
-      LetterBoard.pickCharWithFrequencies = savePickCharWithFrequencies;
+      TileBoard.pickCharWithFrequencies = savePickCharWithFrequencies;
     });
 
     function createDefaultBoard() {
@@ -187,6 +187,14 @@ describe('TileBoard', function() {
         'CDEFGHI' +
         'JKLMNOP';
       assert.equal(board.toString, expectedBoard);
+    });
+  });
+
+  describe('#pickCharWithFrequencies()', function() {
+    it('should return a single caps alpha character', function() {
+      let result = TileBoard.pickCharWithFrequencies();
+      assert.equal(result.length, 1);
+      assert.isTrue(/[A-Z]/.test(result));
     });
   });
 
