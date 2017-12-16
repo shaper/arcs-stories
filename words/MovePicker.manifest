@@ -8,11 +8,12 @@
 
 import 'Board.schema'
 import 'Move.schema'
+import 'Stats.schema'
 
 import 'https://$cdn/artifacts/People/Person.schema'
 
 particle MovePicker in 'source/MovePicker.js'
-  MovePicker(in Person person, inout Board board, inout Move move)
+  MovePicker(in Person person, inout Board board, inout Move move, inout Stats stats)
   affordance dom
   consume root
   description `select next move`
