@@ -10,7 +10,8 @@ var assert = chai.assert;
 describe('TileBoard', function() {
   const savePickCharWithFrequencies = TileBoard.pickCharWithFrequencies;
 
-  function createDefaultBoard() {
+  function createDefaultBoard(shuffleCount) {
+    if (shuffleCount == undefined) shuffleCount = 1;
     return new TileBoard({
       letters:
         'ABCDEFG' +
@@ -19,7 +20,8 @@ describe('TileBoard', function() {
         'VWXYZAB' +
         'CDEFGHI' +
         'JKLMNOP' +
-        'QRSTUVW'
+        'QRSTUVW',
+      shuffleAvailableCount: shuffleCount
     });
   }
 
@@ -238,6 +240,43 @@ describe('TileBoard', function() {
       let result = TileBoard.pickCharWithFrequencies();
       assert.equal(result.length, 1);
       assert.isTrue(/[A-Z]/.test(result));
+    });
+  });
+
+  describe('#indexToX()', function() {
+    it('should compute x for index correctly', function() {
+      assert.equal(TileBoard.indexToX(0), 0);
+      assert.equal(TileBoard.indexToX(6), 6);
+      assert.equal(TileBoard.indexToX(7), 0);
+      assert.equal(TileBoard.indexToX(48), 6);
+    });
+  });
+
+  describe('#indexToY()', function() {
+    it('should compute y for index correctly', function() {
+      assert.equal(TileBoard.indexToY(0), 0);
+      assert.equal(TileBoard.indexToY(6), 0);
+      assert.equal(TileBoard.indexToY(7), 1);
+      assert.equal(TileBoard.indexToY(48), 6);
+    });
+  });
+
+  describe('#shuffle()', function() {
+    it('should not shuffle board with no shuffles remaining', function() {
+      let board = createDefaultBoard(0);
+      let letters = board.toString;
+      assert.equal(board.shuffleAvailableCount, 0);
+      assert.isFalse(board.shuffle());
+      assert.equal(letters, board.toString);
+    });
+
+    it('should shuffle board with a shuffle remaining', function() {
+      let board = createDefaultBoard(1);
+      let letters = board.toString;
+      assert.equal(board.shuffleAvailableCount, 1);
+      assert.isTrue(board.shuffle());
+      assert.notEqual(letters, board.toString);
+      assert.equal(board.shuffleAvailableCount, 0);
     });
   });
 

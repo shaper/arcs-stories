@@ -75,7 +75,13 @@ defineParticle(({ DomParticle, resolver }) => {
    <div class="gameInfo">
      <div class="score">Score: <span>{{score}}</span></div>
      <div class="move">Move: <span>{{move}}</span></div>
-     <div><button on-click="_onSubmitMove">Submit Move</button></div>
+     <div class="longestWord">Longest word: <span>{{longestWord}}</span></div>
+     <div class="highestScoringWord">Highest scoring word: <span>{{highestScoringWord}}</span></div>
+     <div class="shuffle">Shuffles Remaining: <span>{{shuffleAvailableCount}}</span></div>
+     <div>
+       <button on-click="_onSubmitMove">Submit Move</button>
+       <button style%="padding-left: 2em" on-click="_onShuffle">Shuffle</button>
+     </div>
    </div>
    <div class="board"><span>{{boardCells}}</span><span>{{annotations}}</span></div>
  </div>
@@ -91,6 +97,8 @@ defineParticle(({ DomParticle, resolver }) => {
 
   const DICTIONARY_URL =
     'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/american-english.txt';
+
+  const DEFAULT_SHUFFLE_AVAILABLE_COUNT = 3;
 
   const info = console.log.bind(
     console.log,
@@ -176,11 +184,39 @@ defineParticle(({ DomParticle, resolver }) => {
             score = Scoring.wordScore(moveTiles);
             info(`Scoring word [word=${word}, score=${score}].`);
             tileBoard.applyMove(moveTiles);
-            this._setStats(
-              props.stats.score + score,
-              props.stats.moveCount + 1
-            );
-            this._setBoard(tileBoard.toString);
+
+            let newStats = {
+              highestScoringWord: props.stats.highestScoringWord,
+              highestScoringWordScore: props.stats.highestScoringWordScore,
+              longestWord: props.stats.longestWord,
+              longestWordScore: props.stats.longestWordScore
+            };
+
+            // Update highest scoring word if needed.
+            if (
+              !props.stats.highestScoringWord ||
+              props.stats.highestScoringWordScore < score
+            ) {
+              newStats['highestScoringWord'] = word;
+              newStats['highestScoringWordScore'] = score;
+            }
+
+            // Update longest word if needed.
+            if (
+              !props.stats.longestWord ||
+              props.stats.longestWord.length < word.length
+            ) {
+              newStats['longestWord'] = word;
+              newStats['longestWordScore'] = score;
+            }
+
+            newStats['score'] = props.stats.score + score;
+            newStats['moveCount'] = props.stats.moveCount + 1;
+            this._setStats(newStats);
+            this._setBoard({
+              letters: tileBoard.toString,
+              shuffleAvailableCount: props.board.shuffleAvailableCount
+            });
           }
         }
         this._setMove('');
@@ -193,17 +229,20 @@ defineParticle(({ DomParticle, resolver }) => {
       let boardChars = '';
       for (let i = 0; i < TILE_COUNT; i++)
         boardChars += TileBoard.pickCharWithFrequencies();
-      this._setBoard(boardChars);
+      this._setBoard({
+        letters: boardChars,
+        shuffleAvailableCount: DEFAULT_SHUFFLE_AVAILABLE_COUNT
+      });
     }
     _generateStats() {
-      this._setStats(0, 0);
+      this._setStats({ score: 0, moveCount: 0, startstamp: Date.now() });
     }
     _willReceiveProps(props, state) {
       // info('willReceiveProps [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
       if (!props.board) this._generateBoard();
       if (!props.stats) this._generateStats();
-      if (!state.dictionary) return;
+      if (!state.dictionary || !props.board || !props.stats) return;
       let tileBoardState = new TileBoard(props.board);
       let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
         props,
@@ -273,6 +312,12 @@ defineParticle(({ DomParticle, resolver }) => {
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
       const moveText = `${word} (${Scoring.wordScore(state.selectedTiles)})`;
+      const longestWordText = `${props.stats.longestWord} (${
+        props.stats.longestWordScore
+      })`;
+      const highestScoringWordText = `${props.stats.highestScoringWord} (${
+        props.stats.highestScoringWordScore
+      })`;
       return {
         annotations: {
           $template: 'annotation',
@@ -283,6 +328,9 @@ defineParticle(({ DomParticle, resolver }) => {
           models: boardModels
         },
         move: moveText,
+        longestWord: longestWordText,
+        highestScoringWord: highestScoringWordText,
+        shuffleAvailableCount: props.board.shuffleAvailableCount,
         score: `${state.score} (${props.stats.moveCount} moves)`
       };
     }
@@ -334,22 +382,28 @@ defineParticle(({ DomParticle, resolver }) => {
       this._setMove(state.move.coordinates);
       this._setState({ moveSubmitted: true });
     }
+    _onShuffle(e, state) {
+      info(`Shuffling [remaining=${state.tileBoard.shuffleAvailableCount}].`);
+      if (state.tileBoard.shuffle()) {
+        this._setBoard({
+          letters: state.tileBoard.toString,
+          shuffleAvailableCount: state.tileBoard.shuffleAvailableCount
+        });
+      }
+    }
     _setMove(newCoordinates) {
       let newMove = Object.assign({}, { coordinates: newCoordinates });
       const move = this._views.get('move');
       move.set(new move.entityClass(newMove));
     }
-    _setBoard(newLetters) {
-      let newBoard = Object.assign({}, { letters: newLetters });
+    _setBoard(values) {
       const board = this._views.get('board');
+      let newBoard = Object.assign({}, values);
       board.set(new board.entityClass(newBoard));
     }
-    _setStats(newScore, newMoveCount) {
-      let newStats = Object.assign(
-        {},
-        { score: newScore, moveCount: newMoveCount }
-      );
+    _setStats(values) {
       const stats = this._views.get('stats');
+      let newStats = Object.assign({}, values);
       stats.set(new stats.entityClass(newStats));
     }
   };
