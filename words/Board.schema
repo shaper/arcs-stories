@@ -11,3 +11,5 @@ schema Board
     # A string list of letters comprising the board laid out in an
     # NxN grid filled from left to right starting at top left.
     Text letters
+    # The number of shuffle actions available to the user.
+    Number shuffleAvailableCount

@@ -14,8 +14,8 @@ var Tile = class {
   constructor(charIndex, letter) {
     this._charIndex = charIndex;
     this._letter = letter;
-    this._x = charIndex % BOARD_WIDTH;
-    this._y = Math.floor(charIndex / BOARD_HEIGHT);
+    this._x = TileBoard.indexToX(charIndex);
+    this._y = TileBoard.indexToY(charIndex);
   }
   get charIndex() {
     return this._charIndex;

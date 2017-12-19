@@ -8,12 +8,19 @@
 
 schema Stats
   normative
+    # Current or ending (if over) game score.
     Number score
+    # Total number of moves made in game thus far (or total, if over).
     Number moveCount
-    # TODO(wkorman): Add these additional metrics:
-    # Game start timestamp
-    # Game end timestamp
+    # Timestamp at which the game was first created.
+    Number startstamp
+    # Timestamp at which the game ended or undefined if not yet over.
+    Number endstamp
     # Longest word (text)
+    Text longestWord
     # Longest word (score)
+    Number longestWordScore
     # Highest scoring word (text)
+    Text highestScoringWord
     # Highest scoring word (score)
+    Number highestScoringWordScore

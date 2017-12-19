@@ -45,6 +45,7 @@ var TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
 
 var TileBoard = class {
   constructor(board) {
+    this._shuffleAvailableCount = board.shuffleAvailableCount;
     this._rows = [];
     let colCount = 0;
     let rowCount = 0;
@@ -58,6 +59,9 @@ var TileBoard = class {
         colCount++;
       }
     }
+  }
+  get shuffleAvailableCount() {
+    return this._shuffleAvailableCount;
   }
   get size() {
     return TILE_COUNT;
@@ -133,6 +137,23 @@ var TileBoard = class {
       }
     }
   }
+  shuffle() {
+    if (this._shuffleAvailableCount <= 0) return false;
+    // Fisher-Yates shuffle per https://bost.ocks.org/mike/shuffle/
+    let m = TILE_COUNT;
+    while (m) {
+      const i = Math.floor(Math.random() * m--);
+      const tx = TileBoard.indexToX(i);
+      const ty = TileBoard.indexToY(i);
+      const mx = TileBoard.indexToX(m);
+      const my = TileBoard.indexToY(m);
+      const t = this._rows[my][mx];
+      this._rows[my][mx] = this._rows[ty][tx];
+      this._rows[ty][tx] = t;
+    }
+    this._shuffleAvailableCount--;
+    return true;
+  }
   get toString() {
     return this._rows.map(r => r.map(c => c.letter).join('')).join('');
   }
@@ -144,6 +165,12 @@ var TileBoard = class {
       if (accumulator >= pick) return CHAR_FREQUENCIES[i][0];
     }
     return CHAR_FREQUENCIES[CHAR_FREQUENCIES.length - 1][0];
+  }
+  static indexToX(index) {
+    return index % BOARD_WIDTH;
+  }
+  static indexToY(index) {
+    return Math.floor(index / BOARD_HEIGHT);
   }
 };
 
