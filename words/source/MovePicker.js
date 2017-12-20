@@ -26,12 +26,9 @@ defineParticle(({ DomParticle, resolver }) => {
      cursor: pointer;
      user-select: none;
    }
-   [${host}] .score,
-   [${host}] .move {
+   [${host}] .gameInfo {
      font-size: 1.2em;
      font-variant-caps: all-small-caps;
-   }
-   [${host}] .gameInfo {
      padding-bottom: 0.5em;
    }
    [${host}] .board {
@@ -42,7 +39,7 @@ defineParticle(({ DomParticle, resolver }) => {
    [${host}] .board .tile {
      background-color: wheat;
      border-radius: 3px;
-     color: brown;
+     color: black;
      display: inline-block;
      text-align: center;
      font: sans-serif;
@@ -58,8 +55,10 @@ defineParticle(({ DomParticle, resolver }) => {
      line-height: normal;
      top: 0.1em;
      right: 0.2em;
+     color: #cc6600;
    }
-   [${host}] .board .selected {
+   [${host}] .board .selected,
+   [${host}] .board .selected .points {
      background-color: goldenrod;
      color: white;
    }
@@ -79,7 +78,7 @@ defineParticle(({ DomParticle, resolver }) => {
      <div class="highestScoringWord">Highest scoring word: <span>{{highestScoringWord}}</span></div>
      <div class="shuffle">Shuffles Remaining: <span>{{shuffleAvailableCount}}</span></div>
      <div>
-       <button on-click="_onSubmitMove">Submit Move</button>
+       <button disabled="{{submitMoveDisabled}}" on-click="_onSubmitMove">Submit Move</button>
        <button style%="padding-left: 2em" on-click="_onShuffle">Shuffle</button>
      </div>
    </div>
@@ -96,7 +95,7 @@ defineParticle(({ DomParticle, resolver }) => {
       `.trim();
 
   const DICTIONARY_URL =
-    'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/american-english.txt';
+    'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/words-dictionary.txt';
 
   const DEFAULT_SHUFFLE_AVAILABLE_COUNT = 3;
 
@@ -163,10 +162,7 @@ defineParticle(({ DomParticle, resolver }) => {
       );
     }
     _tilesToWord(tiles) {
-      return tiles
-        .map(t => t.letter)
-        .join('')
-        .toLowerCase();
+      return tiles.map(t => t.letter).join('');
     }
     _processSubmittedMove(props, state, tileBoard) {
       let moveData = props.move ? props.move.rawData : { coordinates: '' };
@@ -312,12 +308,17 @@ defineParticle(({ DomParticle, resolver }) => {
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
       const moveText = `${word} (${Scoring.wordScore(state.selectedTiles)})`;
-      const longestWordText = `${props.stats.longestWord} (${
-        props.stats.longestWordScore
-      })`;
-      const highestScoringWordText = `${props.stats.highestScoringWord} (${
-        props.stats.highestScoringWordScore
-      })`;
+      const longestWordText = props.stats.longestWord
+        ? `${props.stats.longestWord} (${props.stats.longestWordScore})`
+        : '(none yet)';
+      const highestScoringWordText = props.stats.highestScoringWord
+        ? `${props.stats.highestScoringWord} (${
+            props.stats.highestScoringWordScore
+          })`
+        : '(none yet)';
+      const submitMoveEnabled =
+        Scoring.isMinimumWordLength(state.selectedTiles.length) &&
+        state.dictionary.contains(this._tilesToWord(state.selectedTiles));
       return {
         annotations: {
           $template: 'annotation',
@@ -331,7 +332,8 @@ defineParticle(({ DomParticle, resolver }) => {
         longestWord: longestWordText,
         highestScoringWord: highestScoringWordText,
         shuffleAvailableCount: props.board.shuffleAvailableCount,
-        score: `${state.score} (${props.stats.moveCount} moves)`
+        score: `${state.score} (${props.stats.moveCount} moves)`,
+        submitMoveDisabled: !submitMoveEnabled
       };
     }
     _onTileClicked(e, state) {

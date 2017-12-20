@@ -20,11 +20,11 @@ var Dictionary = class {
     this._dict = new Set();
     for (const wordEntry of words.split('\n')) {
       const trimmedWord = wordEntry.trim();
-      if (trimmedWord.length > 0) this._dict.add(trimmedWord);
+      if (trimmedWord.length > 0) this._dict.add(trimmedWord.toUpperCase());
     }
   }
   contains(word) {
-    return this._dict.has(word);
+    return this._dict.has(word.toUpperCase());
   }
   get size() {
     return this._dict.size;
