@@ -20,6 +20,17 @@ describe('Dictionary', function() {
     it('should not report absent words', function() {
       assert.isFalse(dictionary.contains('burrito'));
     });
+
+    it('should ignore case on lookup', function() {
+      assert.isTrue(dictionary.contains('foo'));
+      assert.isTrue(dictionary.contains('FOO'));
+    });
+
+    it('should ignore case on construction', function() {
+      const altDictionary = new Dictionary('FOO');
+      assert.isTrue(dictionary.contains('foo'));
+      assert.isTrue(dictionary.contains('FOO'));
+    });
   });
 
   describe('#size', function() {
