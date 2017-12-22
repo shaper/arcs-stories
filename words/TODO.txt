@@ -1,6 +1,7 @@
 1 build leaderboard of scores
 1 touch-drag to select; or, click back multiple letters to unselect multiple
 1 add something like burning tiles to cause end-game
+1 show move word multiplier if > 1 in score info
 
 2 use new Number type in schema for move
 2 support ending game and starting a new one

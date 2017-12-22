@@ -112,16 +112,17 @@ defineParticle(({ DomParticle, resolver }) => {
     _boardToModels(tileBoard, coordinates) {
       let models = [];
       for (let i = 0; i < tileBoard.size; i++) {
-        let tile = tileBoard.tileAtIndex(i);
-        let letterClasses = ['tile'];
+        const tile = tileBoard.tileAtIndex(i);
+        const letterClasses = ['tile'];
+        let yPixels = tile.y * 50 + tile.y;
+        if (tile.isShiftedDown) yPixels += 25;
         if (coordinates.indexOf(`(${tile.x},${tile.y})`) != -1)
           letterClasses.push('selected');
         models.push({
           letter: tile.letter,
           points: Scoring.pointsForLetter(tile.letter),
           index: i,
-          style: `top: ${tile.y * 50 + tile.y}px; left: ${tile.x * 50 +
-            tile.x}px;`,
+          style: `top: ${yPixels}px; left: ${tile.x * 50 + tile.x}px;`,
           classes: letterClasses.join(' ')
         });
       }
@@ -255,31 +256,49 @@ defineParticle(({ DomParticle, resolver }) => {
         moveSubmitted: false
       });
     }
+    _topPixelForHorizontalTransition(fromTile, toTile) {
+      let topPixel = fromTile.y * 50 + 18 + fromTile.y;
+      if (fromTile.isShiftedDown) {
+        topPixel += 25;
+        if (toTile.y == fromTile.y) topPixel -= 12;
+        else topPixel += 12;
+      } else {
+        if (toTile.y == fromTile.y) topPixel += 12;
+        else topPixel -= 12;
+      }
+      return topPixel;
+    }
     _tileTransitionToTextAndPosition(fromTile, toTile) {
       // A sad hard-coded pixel positioned hack. Rework to use alignment with
       // the involved tile position.
       let contentText, positionText;
       if (toTile.x > fromTile.x) {
         contentText = '→';
-        let tilesFromRight = BOARD_WIDTH - fromTile.x - 1;
-        positionText = `top: ${fromTile.y * 50 +
-          18 +
-          fromTile.y}px; right: ${tilesFromRight * 50 + tilesFromRight - 9}px;`;
+        const tilesFromRight = BOARD_WIDTH - fromTile.x - 1;
+        let topPixel = this._topPixelForHorizontalTransition(fromTile, toTile);
+        positionText = `top: ${topPixel}px; right: ${tilesFromRight * 50 +
+          tilesFromRight -
+          9}px;`;
       } else if (toTile.x < fromTile.x) {
         contentText = '←';
-        positionText = `top: ${fromTile.y * 50 +
-          18 +
-          fromTile.y}px; left: ${fromTile.x * 50 + fromTile.x - 9}px;`;
+        let topPixel = this._topPixelForHorizontalTransition(fromTile, toTile);
+        positionText = `top: ${topPixel}px; left: ${fromTile.x * 50 +
+          fromTile.x -
+          9}px;`;
       } else if (toTile.y > fromTile.y) {
         contentText = '↓';
-        positionText = `top: ${(fromTile.y + 1) * 50 -
-          7 +
-          fromTile.y}px; left: ${fromTile.x * 50 + fromTile.x + 22}px;`;
+        let topPixel = (fromTile.y + 1) * 50 - 7 + fromTile.y;
+        if (fromTile.isShiftedDown) topPixel += 25;
+        positionText = `top: ${topPixel}px; left: ${fromTile.x * 50 +
+          fromTile.x +
+          22}px;`;
       } else {
         contentText = '↑';
-        positionText = `top: ${fromTile.y * 50 -
-          9 +
-          fromTile.y}px; left: ${fromTile.x * 50 + fromTile.x + 22}px;`;
+        let topPixel = fromTile.y * 50 - 9 + fromTile.y;
+        if (fromTile.isShiftedDown) topPixel += 25;
+        positionText = `top: ${topPixel}px; left: ${fromTile.x * 50 +
+          fromTile.x +
+          22}px;`;
       }
       return [contentText, positionText];
     }
@@ -347,7 +366,7 @@ defineParticle(({ DomParticle, resolver }) => {
       //     lastSelectedTile ? lastSelectedTile.toString : 'undefined'
       //   }].`
       // );
-      if (!state.tileBoard.isMoveValid(state.move, state.selectedTiles, tile)) {
+      if (!state.tileBoard.isMoveValid(state.selectedTiles, tile)) {
         info(`Ignoring selection of invalid tile [tile=${tile.toString}].`);
         return;
       }
