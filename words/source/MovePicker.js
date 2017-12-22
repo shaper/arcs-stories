@@ -35,6 +35,8 @@ defineParticle(({ DomParticle, resolver }) => {
      height: 356px;
      width: 356px;
      position: relative;
+     user-select: none;
+     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
    }
    [${host}] .board .tile {
      background-color: wheat;
@@ -319,10 +321,10 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
-      if (!state.tileBoard || !state.move) return {};
+      if (!state.tileBoard) return {};
       let boardModels = this._boardToModels(
         state.tileBoard,
-        state.move.coordinates
+        state.move ? state.move.coordinates : ''
       );
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
