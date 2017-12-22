@@ -29,6 +29,9 @@ var Tile = class {
   get y() {
     return this._y;
   }
+  get isShiftedDown() {
+    return this._x % 2 == 0;
+  }
   get toString() {
     return `[charIndex=${this.charIndex}, letter=${this.letter}, x=${
       this.x

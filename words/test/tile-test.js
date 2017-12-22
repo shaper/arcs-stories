@@ -18,6 +18,7 @@ describe('Tile', function() {
       assert.equal(2, tile42.x);
     });
   });
+
   describe('#y', function() {
     it('should compute y coordinate correctly', function() {
       const tile00 = new Tile(0, 'A');
@@ -28,6 +29,15 @@ describe('Tile', function() {
       assert.equal(4, tile42.y);
     });
   });
+
+  describe('#isShiftedDown', function() {
+    it('should report alternating tile columns from zero on as shifted down', function() {
+      assert.isTrue(new Tile(0, 'A').isShiftedDown);
+      assert.isFalse(new Tile(1, 'B').isShiftedDown);
+      assert.isTrue(new Tile(2, 'C').isShiftedDown);
+    });
+  });
+
   describe('#toString', function() {
     it('should include all member data', function() {
       const tile = new Tile(0, 'A');

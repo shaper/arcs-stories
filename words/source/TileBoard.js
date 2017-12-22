@@ -75,14 +75,9 @@ var TileBoard = class {
   _tileArrayContainsTile(tileArray, tile) {
     return tileArray.find(t => t.x == tile.x && t.y == tile.y);
   }
-  isMoveValid(move, selectedTiles, tile) {
+  isMoveValid(selectedTiles, tile) {
     // Initial moves are considered valid.
-    if (
-      !move.coordinates ||
-      move.coordinates.length == 0 ||
-      selectedTiles.length == 0
-    )
-      return true;
+    if (selectedTiles.length == 0) return true;
     // Selecting the last selected tile is permitted so as to de-select.
     let lastSelectedTile = selectedTiles[selectedTiles.length - 1];
     if (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y)
@@ -90,10 +85,30 @@ var TileBoard = class {
     // Else the new selection must touch the last selection and can't
     // already be selected.
     let touchesLastSelectedTile =
+      // Above.
       (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y - 1) ||
+      // Below.
       (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y + 1) ||
+      // Right.
       (lastSelectedTile.x == tile.x - 1 && lastSelectedTile.y == tile.y) ||
-      (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.y == tile.y);
+      // Right and offset below.
+      (lastSelectedTile.x == tile.x - 1 &&
+        lastSelectedTile.isShiftedDown &&
+        lastSelectedTile.y == tile.y - 1) ||
+      // Right and offset above.
+      (lastSelectedTile.x == tile.x - 1 &&
+        !lastSelectedTile.isShiftedDown &&
+        lastSelectedTile.y == tile.y + 1) ||
+      // Left.
+      (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.y == tile.y) ||
+      // Left and offset below.
+      (lastSelectedTile.x == tile.x + 1 &&
+        lastSelectedTile.isShiftedDown &&
+        lastSelectedTile.y == tile.y - 1) ||
+      // Left and offset above.
+      (lastSelectedTile.x == tile.x + 1 &&
+        !lastSelectedTile.isShiftedDown &&
+        lastSelectedTile.y == tile.y + 1);
     return (
       touchesLastSelectedTile &&
       !this._tileArrayContainsTile(selectedTiles, tile)

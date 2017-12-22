@@ -292,5 +292,118 @@ describe('TileBoard', function() {
     });
   });
 
-  // TODO(wkorman): Add tests for isMoveValid.
+  describe('#isMoveValid()', function() {
+    it('should consider initial moves valid', function() {
+      const board = createDefaultBoard();
+      assert.isTrue(board.isMoveValid([], new Tile(0, 'A')));
+    });
+
+    it('should allow selecting the last selected tile', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(0, 'A');
+      assert.isTrue(board.isMoveValid([tile], tile));
+    });
+
+    it('should allow selecting any touching tile from top left corner', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(0, 'A');
+      // Right.
+      assert.isTrue(board.isMoveValid([tile], new Tile(1, 'B')));
+      // Right and offset below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(8, 'I')));
+      // Below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(7, 'H')));
+
+      assert.isFalse(board.isMoveValid([tile], new Tile(2, 'C')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(6, 'G')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(9, 'J')));
+    });
+
+    it('should allow selecting any touching tile from top right corner', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(6, 'G');
+      // Left.
+      assert.isTrue(board.isMoveValid([tile], new Tile(5, 'F')));
+      // Left and offset below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(12, 'M')));
+      // Below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(13, 'N')));
+
+      assert.isFalse(board.isMoveValid([tile], new Tile(4, 'E')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(7, 'H')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(11, 'L')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(14, 'O')));
+    });
+
+    it('should allow selecting any touching tile from bottom right corner', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(48, 'W');
+      // Above.
+      assert.isTrue(board.isMoveValid([tile], new Tile(41, 'P')));
+      // Left.
+      assert.isTrue(board.isMoveValid([tile], new Tile(47, 'V')));
+
+      assert.isFalse(board.isMoveValid([tile], new Tile(40, 'O')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(46, 'U')));
+    });
+
+    it('should allow selecting any touching tile from bottom left corner', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(42, 'Q');
+      // Above.
+      assert.isTrue(board.isMoveValid([tile], new Tile(35, 'J')));
+      // Right.
+      assert.isTrue(board.isMoveValid([tile], new Tile(43, 'R')));
+
+      assert.isFalse(board.isMoveValid([tile], new Tile(34, 'I')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(36, 'K')));
+      assert.isFalse(board.isMoveValid([tile], new Tile(44, 'S')));
+    });
+
+    it('should allow selecting any touching tile from an unshifted column in center region', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(22, 'Y');
+      assert.isFalse(tile.isShiftedDown);
+      // Above.
+      assert.isTrue(board.isMoveValid([tile], new Tile(15, 'R')));
+      // Below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(29, 'F')));
+      // Right.
+      assert.isTrue(board.isMoveValid([tile], new Tile(23, 'Z')));
+      // Right and offset above.
+      assert.isTrue(board.isMoveValid([tile], new Tile(16, 'S')));
+      // Left.
+      assert.isTrue(board.isMoveValid([tile], new Tile(21, 'X')));
+      // Left and offset above.
+      assert.isTrue(board.isMoveValid([tile], new Tile(14, 'Q')));
+
+      // Right and offset below.
+      assert.isFalse(board.isMoveValid([tile], new Tile(30, 'G')));
+      // Left and offset below.
+      assert.isFalse(board.isMoveValid([tile], new Tile(28, 'E')));
+    });
+
+    it('should allow selecting any touching tile from a shifted column in center region', function() {
+      const board = createDefaultBoard();
+      const tile = new Tile(23, 'Z');
+      assert.isTrue(tile.isShiftedDown);
+      // Above.
+      assert.isTrue(board.isMoveValid([tile], new Tile(16, 'S')));
+      // Below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(30, 'G')));
+      // Right.
+      assert.isTrue(board.isMoveValid([tile], new Tile(24, 'A')));
+      // Right and offset below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(31, 'H')));
+      // Left.
+      assert.isTrue(board.isMoveValid([tile], new Tile(22, 'Y')));
+      // Left and offset below.
+      assert.isTrue(board.isMoveValid([tile], new Tile(29, 'F')));
+
+      // Right and offset above.
+      assert.isFalse(board.isMoveValid([tile], new Tile(17, 'T')));
+      // Left and offset above.
+      assert.isFalse(board.isMoveValid([tile], new Tile(15, 'R')));
+    });
+  });
 });
