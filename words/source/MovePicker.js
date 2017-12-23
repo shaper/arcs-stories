@@ -35,6 +35,8 @@ defineParticle(({ DomParticle, resolver }) => {
      height: 356px;
      width: 356px;
      position: relative;
+     user-select: none;
+     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
    }
    [${host}] .board .tile {
      background-color: wheat;
@@ -85,7 +87,7 @@ defineParticle(({ DomParticle, resolver }) => {
    <div class="board"><span>{{boardCells}}</span><span>{{annotations}}</span></div>
  </div>
  <template board-cell>
-   <div class="{{classes}}" style%="{{style}}" on-click="_onTileClicked" value="{{index}}">
+   <div class="{{classes}}" style%="{{style}}" on-mousedown="_onTileMouseDown" on-mouseup="_onTileMouseUp" on-mouseover="_onTileMouseOver" value="{{index}}">
      <span>{{letter}}</span><div class="points">{{points}}</div>
    </div>
  </template>
@@ -319,10 +321,10 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
-      if (!state.tileBoard || !state.move) return {};
+      if (!state.tileBoard) return {};
       let boardModels = this._boardToModels(
         state.tileBoard,
-        state.move.coordinates
+        state.move ? state.move.coordinates : ''
       );
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
@@ -355,21 +357,34 @@ defineParticle(({ DomParticle, resolver }) => {
         submitMoveDisabled: !submitMoveEnabled
       };
     }
-    _onTileClicked(e, state) {
+    _onTileMouseDown(e, state) {
+      state.lastTileMoused = e.data.value;
+      this._selectTile(e, state);
+    }
+    _onTileMouseUp(e, state) {
+      state.lastTileMoused = null;
+      this._setState({
+        lastTileMoused: state.lastTileMoused
+      });
+    }
+    _onTileMouseOver(e, state) {
+      if (state.lastTileMoused && state.lastTileMoused != e.data.value) {
+        state.lastTileMoused = e.data.value;
+        this._selectTile(e, state);
+      }
+    }
+    _selectTile(e, state) {
       const tile = state.tileBoard.tileAtIndex(e.data.value);
       let lastSelectedTile =
         state.selectedTiles.length == 0
           ? undefined
           : state.selectedTiles[state.selectedTiles.length - 1];
       // info(
-      //   `_onTileClicked [tile=${tile.toString}, lastSelectedTile=${
+      //   `_selectTile [tile=${tile.toString}, lastSelectedTile=${
       //     lastSelectedTile ? lastSelectedTile.toString : 'undefined'
       //   }].`
       // );
-      if (!state.tileBoard.isMoveValid(state.selectedTiles, tile)) {
-        info(`Ignoring selection of invalid tile [tile=${tile.toString}].`);
-        return;
-      }
+      if (!state.tileBoard.isMoveValid(state.selectedTiles, tile)) return;
       let newCoordinates = '';
       if (
         lastSelectedTile &&
@@ -396,6 +411,7 @@ defineParticle(({ DomParticle, resolver }) => {
       state.move.coordinates = newCoordinates;
       this._setState({
         move: state.move,
+        lastTileMoused: state.lastTileMoused,
         selectedTiles: state.selectedTiles
       });
     }
