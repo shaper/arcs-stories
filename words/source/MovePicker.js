@@ -87,7 +87,7 @@ defineParticle(({ DomParticle, resolver }) => {
    <div class="board"><span>{{boardCells}}</span><span>{{annotations}}</span></div>
  </div>
  <template board-cell>
-   <div class="{{classes}}" style%="{{style}}" on-mousedown="_onTileMouseDown" on-mouseup="_onTileMouseUp" on-click="_onTileClicked" on-mouseover="_onTileMouseOver" value="{{index}}">
+   <div class="{{classes}}" style%="{{style}}" on-mousedown="_onTileMouseDown" on-mouseup="_onTileMouseUp" on-mouseover="_onTileMouseOver" value="{{index}}">
      <span>{{letter}}</span><div class="points">{{points}}</div>
    </div>
  </template>
@@ -372,9 +372,6 @@ defineParticle(({ DomParticle, resolver }) => {
         state.lastTileMoused = e.data.value;
         this._selectTile(e, state);
       }
-    }
-    _onTileClicked(e, state) {
-      this._selectTile(e, state);
     }
     _selectTile(e, state) {
       const tile = state.tileBoard.tileAtIndex(e.data.value);
