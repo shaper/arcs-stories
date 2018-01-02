@@ -218,7 +218,7 @@ defineParticle(({ DomParticle, resolver }) => {
             this._setStats(newStats);
             this._setBoard({
               letters: tileBoard.toString,
-              shuffleAvailableCount: props.board.shuffleAvailableCount
+              shuffleAvailableCount: tileBoard.shuffleAvailableCount
             });
           }
         }
@@ -257,7 +257,7 @@ defineParticle(({ DomParticle, resolver }) => {
         move: moveState,
         selectedTiles: moveTiles,
         moveScore: Scoring.wordScore(moveTiles),
-        score: props.stats.score,
+        score: props.stats ? props.stats.score : 0,
         moveSubmitted: false
       });
     }
@@ -324,10 +324,11 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
-      if (!state.tileBoard) return {
-        hideDictionaryLoading: false,
-        hideGameInfo: true
-      };
+      if (!state.tileBoard)
+        return {
+          hideDictionaryLoading: false,
+          hideGameInfo: true
+        };
       let boardModels = this._boardToModels(
         state.tileBoard,
         state.move ? state.move.coordinates : ''
@@ -335,14 +336,16 @@ defineParticle(({ DomParticle, resolver }) => {
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
       const moveText = `${word} (${Scoring.wordScore(state.selectedTiles)})`;
-      const longestWordText = props.stats.longestWord
-        ? `${props.stats.longestWord} (${props.stats.longestWordScore})`
-        : '(none yet)';
-      const highestScoringWordText = props.stats.highestScoringWord
-        ? `${props.stats.highestScoringWord} (${
-            props.stats.highestScoringWordScore
-          })`
-        : '(none yet)';
+      const longestWordText =
+        props.stats && props.stats.longestWord
+          ? `${props.stats.longestWord} (${props.stats.longestWordScore})`
+          : '(none yet)';
+      const highestScoringWordText =
+        props.stats && props.stats.highestScoringWord
+          ? `${props.stats.highestScoringWord} (${
+              props.stats.highestScoringWordScore
+            })`
+          : '(none yet)';
       const submitMoveEnabled =
         Scoring.isMinimumWordLength(state.selectedTiles.length) &&
         state.dictionary.contains(this._tilesToWord(state.selectedTiles));
@@ -358,8 +361,10 @@ defineParticle(({ DomParticle, resolver }) => {
         move: moveText,
         longestWord: longestWordText,
         highestScoringWord: highestScoringWordText,
-        shuffleAvailableCount: props.board.shuffleAvailableCount,
-        score: `${state.score} (${props.stats.moveCount} moves)`,
+        shuffleAvailableCount: state.tileBoard.shuffleAvailableCount,
+        score: `${state.score} (${
+          props.stats ? props.stats.moveCount : 0
+        } moves)`,
         submitMoveDisabled: !submitMoveEnabled,
         hideDictionaryLoading: true,
         hideGameInfo: false
