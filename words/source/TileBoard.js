@@ -45,13 +45,19 @@ var TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
 
 var TileBoard = class {
   constructor(board) {
-    this._shuffleAvailableCount = board.shuffleAvailableCount;
+    this._shuffleAvailableCount = board ? board.shuffleAvailableCount : 0;
     this._rows = [];
     let colCount = 0;
     let rowCount = 0;
-    for (let i = 0; i < board.letters.length; i++) {
+    let letters;
+    if (board) {
+      letters = board.letters;
+    } else {
+      for (let i = 0; i < TILE_COUNT; i++) letters += 'Z';
+    }
+    for (let i = 0; i < letters.length; i++) {
       if (colCount == 0) this._rows.push([]);
-      this._rows[rowCount][colCount] = new Tile(i, board.letters[i]);
+      this._rows[rowCount][colCount] = new Tile(i, letters[i]);
       if (colCount == BOARD_WIDTH - 1) {
         colCount = 0;
         rowCount++;
