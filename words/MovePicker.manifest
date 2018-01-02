@@ -16,4 +16,4 @@ particle MovePicker in 'source/MovePicker.js'
   MovePicker(in Person person, inout Board board, inout Move move, inout Stats stats)
   affordance dom
   consume root
-  description `select next move`
+  description `play Words`

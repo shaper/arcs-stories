@@ -73,7 +73,10 @@ defineParticle(({ DomParticle, resolver }) => {
   const template = `
  ${styles}
  <div ${host}>
-   <div class="gameInfo">
+   <div class="loadingDictionary" hidden="{{hideDictionaryLoading}}">
+     Loading dictionary&hellip;
+   </div>
+   <div class="gameInfo" hidden="{{hideGameInfo}}">
      <div class="score">Score: <span>{{score}}</span></div>
      <div class="move">Move: <span>{{move}}</span></div>
      <div class="longestWord">Longest word: <span>{{longestWord}}</span></div>
@@ -171,6 +174,7 @@ defineParticle(({ DomParticle, resolver }) => {
       let moveData = props.move ? props.move.rawData : { coordinates: '' };
       let moveTiles = this._moveToTiles(tileBoard, props.move);
       let score = 0;
+      if (!state.dictionary) return [moveData, moveTiles, score];
       if (state.moveSubmitted) {
         const word = this._tilesToWord(moveTiles);
         if (!Scoring.isMinimumWordLength(moveTiles.length)) {
@@ -241,7 +245,6 @@ defineParticle(({ DomParticle, resolver }) => {
       this._ensureDictionaryLoaded(state);
       if (!props.board) this._generateBoard();
       if (!props.stats) this._generateStats();
-      if (!state.dictionary || !props.board || !props.stats) return;
       let tileBoardState = new TileBoard(props.board);
       let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
         props,
@@ -321,7 +324,10 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
-      if (!state.tileBoard) return {};
+      if (!state.tileBoard) return {
+        hideDictionaryLoading: false,
+        hideGameInfo: true
+      };
       let boardModels = this._boardToModels(
         state.tileBoard,
         state.move ? state.move.coordinates : ''
@@ -354,7 +360,9 @@ defineParticle(({ DomParticle, resolver }) => {
         highestScoringWord: highestScoringWordText,
         shuffleAvailableCount: props.board.shuffleAvailableCount,
         score: `${state.score} (${props.stats.moveCount} moves)`,
-        submitMoveDisabled: !submitMoveEnabled
+        submitMoveDisabled: !submitMoveEnabled,
+        hideDictionaryLoading: true,
+        hideGameInfo: false
       };
     }
     _onTileMouseDown(e, state) {
