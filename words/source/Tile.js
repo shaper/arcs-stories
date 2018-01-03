@@ -10,7 +10,7 @@
 'use strict';
 
 // A specific tile on the board with an index, position and character.
-var Tile = class {
+class Tile {
   constructor(charIndex, letter) {
     this._charIndex = charIndex;
     this._letter = letter;
