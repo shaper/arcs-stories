@@ -3,6 +3,7 @@
 1 add something like burning tiles to cause end-game
 1 show move word multiplier if > 1 in score info
 
+2 fix multi-tab bug that prevents word selection due to re-render and move reset
 2 use new Number type in schema for move
 2 support ending game and starting a new one
 

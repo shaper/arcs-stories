@@ -46,4 +46,180 @@ describe('Scoring', function() {
       assert.equal(Scoring.wordScore(tilesForWord('ABCDABCDABCDABCD')), 180);
     });
   });
+
+  describe('#longestWordText()', function() {
+    it('should report none for empty stats or word', function() {
+      assert.equal(Scoring.longestWordText(undefined), '(none yet)');
+      assert.equal(
+        Scoring.longestWordText({ longestWord: undefined }),
+        '(none yet)'
+      );
+      assert.equal(Scoring.longestWordText({ longestWord: '' }), '(none yet)');
+    });
+
+    it('should report formatted text when values present', function() {
+      assert.equal(
+        Scoring.longestWordText({ longestWord: 'foo', longestWordScore: 42 }),
+        'foo (42)'
+      );
+    });
+  });
+
+  describe('#highestScoringWordText()', function() {
+    it('should report none for empty stats or word', function() {
+      assert.equal(Scoring.highestScoringWordText(undefined), '(none yet)');
+      assert.equal(
+        Scoring.highestScoringWordText({ highestScoringWord: undefined }),
+        '(none yet)'
+      );
+      assert.equal(
+        Scoring.highestScoringWordText({ highestScoringWord: '' }),
+        '(none yet)'
+      );
+    });
+
+    it('should report formatted text when values present', function() {
+      assert.equal(
+        Scoring.highestScoringWordText({
+          highestScoringWord: 'foo',
+          highestScoringWordScore: 42
+        }),
+        'foo (42)'
+      );
+    });
+  });
+
+  describe('#applyMoveStats()', function() {
+    it('should persist existing stats', function() {
+      const stats = {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 0,
+        moveCount: 0,
+        startstamp: 7331
+      };
+      const actual = Scoring.applyMoveStats(stats, 'short', 38);
+      assert.deepEqual(actual, {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 38,
+        moveCount: 1,
+        startstamp: 7331
+      });
+    });
+
+    it('should update existing highest scoring word', function() {
+      const stats = {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 0,
+        moveCount: 0,
+        startstamp: 7331
+      };
+      const actual = Scoring.applyMoveStats(stats, 'higher', 100);
+      assert.deepEqual(actual, {
+        highestScoringWord: 'higher',
+        highestScoringWordScore: 100,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 100,
+        moveCount: 1,
+        startstamp: 7331
+      });
+    });
+
+    it('should update undefined highest scoring word', function() {
+      const stats = {
+        highestScoringWord: undefined,
+        highestScoringWordScore: undefined,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 0,
+        moveCount: 0,
+        startstamp: 7331
+      };
+      const actual = Scoring.applyMoveStats(stats, 'higher', 100);
+      assert.deepEqual(actual, {
+        highestScoringWord: 'higher',
+        highestScoringWordScore: 100,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 100,
+        moveCount: 1,
+        startstamp: 7331
+      });
+    });
+
+    it('should update existing longest word', function() {
+      const stats = {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 0,
+        moveCount: 0,
+        startstamp: 7331
+      };
+      const actual = Scoring.applyMoveStats(stats, 'evenlonger', 23);
+      assert.deepEqual(actual, {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'evenlonger',
+        longestWordScore: 23,
+        score: 23,
+        moveCount: 1,
+        startstamp: 7331
+      });
+    });
+
+    it('should update undefined longest word', function() {
+      const stats = {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: undefined,
+        longestWordScore: undefined,
+        score: 0,
+        moveCount: 0,
+        startstamp: 7331
+      };
+      const actual = Scoring.applyMoveStats(stats, 'evenlonger', 23);
+      assert.deepEqual(actual, {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'evenlonger',
+        longestWordScore: 23,
+        score: 23,
+        moveCount: 1,
+        startstamp: 7331
+      });
+    });
+
+    it('should update all of the things', function() {
+      const stats = {
+        highestScoringWord: 'highest',
+        highestScoringWordScore: 43,
+        longestWord: 'longest',
+        longestWordScore: 56,
+        score: 8118,
+        moveCount: 345,
+        startstamp: 7331
+      };
+      const actual = Scoring.applyMoveStats(stats, 'evenlonger', 2300);
+      assert.deepEqual(actual, {
+        highestScoringWord: 'evenlonger',
+        highestScoringWordScore: 2300,
+        longestWord: 'evenlonger',
+        longestWordScore: 2300,
+        score: 10418,
+        moveCount: 346,
+        startstamp: 7331
+      });
+    });
+  });
 });

@@ -66,4 +66,39 @@ class Scoring {
       tiles.reduce((accumulator, t) => accumulator + CHAR_SCORE[t.letter], 0)
     );
   }
-};
+  static longestWordText(stats) {
+    return stats && stats.longestWord
+      ? `${stats.longestWord} (${stats.longestWordScore})`
+      : '(none yet)';
+  }
+  static highestScoringWordText(stats) {
+    return stats && stats.highestScoringWord
+      ? `${stats.highestScoringWord} (${stats.highestScoringWordScore})`
+      : '(none yet)';
+  }
+  static applyMoveStats(stats, word, score) {
+    let updatedValues = {
+      highestScoringWord: stats.highestScoringWord,
+      highestScoringWordScore: stats.highestScoringWordScore,
+      longestWord: stats.longestWord,
+      longestWordScore: stats.longestWordScore,
+      startstamp: stats.startstamp
+    };
+
+    // Update highest scoring word if needed.
+    if (!stats.highestScoringWord || stats.highestScoringWordScore < score) {
+      updatedValues['highestScoringWord'] = word;
+      updatedValues['highestScoringWordScore'] = score;
+    }
+
+    // Update longest word if needed.
+    if (!stats.longestWord || stats.longestWord.length < word.length) {
+      updatedValues['longestWord'] = word;
+      updatedValues['longestWordScore'] = score;
+    }
+
+    updatedValues['score'] = stats.score + score;
+    updatedValues['moveCount'] = stats.moveCount + 1;
+    return updatedValues;
+  }
+}

@@ -190,43 +190,15 @@ defineParticle(({ DomParticle, resolver }) => {
             score = Scoring.wordScore(moveTiles);
             info(`Scoring word [word=${word}, score=${score}].`);
             tileBoard.applyMove(moveTiles);
-
-            let newStats = {
-              highestScoringWord: props.stats.highestScoringWord,
-              highestScoringWordScore: props.stats.highestScoringWordScore,
-              longestWord: props.stats.longestWord,
-              longestWordScore: props.stats.longestWordScore
-            };
-
-            // Update highest scoring word if needed.
-            if (
-              !props.stats.highestScoringWord ||
-              props.stats.highestScoringWordScore < score
-            ) {
-              newStats['highestScoringWord'] = word;
-              newStats['highestScoringWordScore'] = score;
-            }
-
-            // Update longest word if needed.
-            if (
-              !props.stats.longestWord ||
-              props.stats.longestWord.length < word.length
-            ) {
-              newStats['longestWord'] = word;
-              newStats['longestWordScore'] = score;
-            }
-
-            newStats['score'] = props.stats.score + score;
-            newStats['moveCount'] = props.stats.moveCount + 1;
-            this._setStats(newStats);
+            this._setStats(Scoring.applyMoveStats(props.stats, word, score));
             this._setBoard({
               letters: tileBoard.toString,
               shuffleAvailableCount: tileBoard.shuffleAvailableCount
             });
           }
         }
-        this._setMove('');
         moveData = { coordinates: '' };
+        this._setMove(moveData);
         moveTiles = [];
       }
       return [moveData, moveTiles, score];
@@ -339,19 +311,9 @@ defineParticle(({ DomParticle, resolver }) => {
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
       const moveText = `${word} (${Scoring.wordScore(state.selectedTiles)})`;
-      const longestWordText =
-        props.stats && props.stats.longestWord
-          ? `${props.stats.longestWord} (${props.stats.longestWordScore})`
-          : '(none yet)';
-      const highestScoringWordText =
-        props.stats && props.stats.highestScoringWord
-          ? `${props.stats.highestScoringWord} (${
-              props.stats.highestScoringWordScore
-            })`
-          : '(none yet)';
       const submitMoveEnabled =
         Scoring.isMinimumWordLength(state.selectedTiles.length) &&
-        state.dictionary.contains(this._tilesToWord(state.selectedTiles));
+        state.dictionary.contains(word);
       return {
         annotations: {
           $template: 'annotation',
@@ -362,8 +324,8 @@ defineParticle(({ DomParticle, resolver }) => {
           models: boardModels
         },
         move: moveText,
-        longestWord: longestWordText,
-        highestScoringWord: highestScoringWordText,
+        longestWord: Scoring.longestWordText(props.stats),
+        highestScoringWord: Scoring.highestScoringWordText(props.stats),
         shuffleAvailableCount: state.tileBoard.shuffleAvailableCount,
         score: `${state.score} (${
           props.stats ? props.stats.moveCount : 0
@@ -432,7 +394,7 @@ defineParticle(({ DomParticle, resolver }) => {
       });
     }
     _onSubmitMove(e, state) {
-      this._setMove(state.move.coordinates);
+      this._setMove({ coordinates: state.move.coordinates });
       this._setState({ moveSubmitted: true });
     }
     _onShuffle(e, state) {
@@ -444,20 +406,17 @@ defineParticle(({ DomParticle, resolver }) => {
         });
       }
     }
-    _setMove(newCoordinates) {
-      let newMove = Object.assign({}, { coordinates: newCoordinates });
+    _setMove(values) {
       const move = this._views.get('move');
-      move.set(new move.entityClass(newMove));
+      move.set(new move.entityClass(values));
     }
     _setBoard(values) {
       const board = this._views.get('board');
-      let newBoard = Object.assign({}, values);
-      board.set(new board.entityClass(newBoard));
+      board.set(new board.entityClass(values));
     }
     _setStats(values) {
       const stats = this._views.get('stats');
-      let newStats = Object.assign({}, values);
-      stats.set(new stats.entityClass(newStats));
+      stats.set(new stats.entityClass(values));
     }
   };
 });
