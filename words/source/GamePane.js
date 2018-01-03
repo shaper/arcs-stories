@@ -11,7 +11,7 @@
 
 defineParticle(({ DomParticle, resolver }) => {
   function importLibrary(filename) {
-    importScripts(resolver(`MovePicker/${filename}`));
+    importScripts(resolver(`GamePane/${filename}`));
   }
   importLibrary('Dictionary.js');
   importLibrary('Scoring.js');
@@ -109,7 +109,7 @@ defineParticle(({ DomParticle, resolver }) => {
 
   const info = console.log.bind(
     console.log,
-    '%cMovePicker',
+    '%cGamePane',
     `background: #ff69b4; color: white; padding: 1px 6px 2px 7px; border-radius: 6px;`
   );
 
@@ -154,19 +154,19 @@ defineParticle(({ DomParticle, resolver }) => {
       if (state.dictionaryLoadingStarted) return;
 
       this._setState({ dictionaryLoadingStarted: true });
-      let particleRef = this;
-      let startstamp = performance.now();
+      const particleRef = this;
+      const startstamp = performance.now();
       fetch(DICTIONARY_URL).then(response =>
         response.text().then(text => {
-          let dictionaryState = new Dictionary(text);
-          let endstamp = performance.now();
-          let loadedMillis = Math.floor(endstamp - startstamp);
+          const dictionary = new Dictionary(text);
+          const endstamp = performance.now();
+          const elapsed = Math.floor(endstamp - startstamp);
           info(
-            `Loaded dictionary [time=${loadedMillis}ms, wordCount=${
-              dictionaryState.size
+            `Loaded dictionary [time=${elapsed}ms, wordCount=${
+              dictionary.size
             }].`
           );
-          particleRef._setState({ dictionary: dictionaryState });
+          particleRef._setState({ dictionary: dictionary });
         })
       );
     }
