@@ -10,10 +10,10 @@
 'use strict';
 
 // Selected words must be at least this long for submission.
-var MINIMUM_WORD_LENGTH = 3;
+const MINIMUM_WORD_LENGTH = 3;
 
 // Base score points for each character.
-var CHAR_SCORE = {
+const CHAR_SCORE = {
   A: 1,
   B: 3,
   C: 3,
@@ -44,9 +44,9 @@ var CHAR_SCORE = {
 
 // Multiplier applied based on word length. Tuples as (length, multiplier).
 // So 3 character words have no multiplier, 4 is 2x, etc.
-var WORD_LENGTH_MULTIPLIERS = [[3, 1], [4, 2], [6, 3], [8, 4], [12, 5]];
+const WORD_LENGTH_MULTIPLIERS = [[3, 1], [4, 2], [6, 3], [8, 4], [12, 5]];
 
-var Scoring = class {
+class Scoring {
   static _wordLengthMultiplier(wordLength) {
     for (let i = 0; i < WORD_LENGTH_MULTIPLIERS.length; i++) {
       if (wordLength <= WORD_LENGTH_MULTIPLIERS[i][0])

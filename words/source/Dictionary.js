@@ -11,7 +11,7 @@
 
 // A simple dictionary class to encapsulate the set of words that are
 // considered valid for game purposes.
-var Dictionary = class {
+class Dictionary {
   // Expects words to be provided as a return-delimited string.
   constructor(words) {
     // TODO(wkorman): Use a trie for better memory efficiency and ship a

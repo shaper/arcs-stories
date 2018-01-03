@@ -10,10 +10,13 @@
 'use strict';
 
 defineParticle(({ DomParticle, resolver }) => {
-  importScripts(resolver('MovePicker/Dictionary.js'));
-  importScripts(resolver('MovePicker/Scoring.js'));
-  importScripts(resolver('MovePicker/Tile.js'));
-  importScripts(resolver('MovePicker/TileBoard.js'));
+  function importLibrary(filename) {
+    importScripts(resolver(`MovePicker/${filename}`));
+  }
+  importLibrary('Dictionary.js');
+  importLibrary('Scoring.js');
+  importLibrary('Tile.js');
+  importLibrary('TileBoard.js');
 
   const host = `move-picker`;
 

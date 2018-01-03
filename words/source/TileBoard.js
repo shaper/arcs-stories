@@ -10,7 +10,7 @@
 'use strict';
 
 // Taken from Wikipedia at https://goo.gl/f4NJEq.
-var CHAR_FREQUENCIES = [
+const CHAR_FREQUENCIES = [
   ['A', 8.167],
   ['B', 1.492],
   ['C', 2.782],
@@ -39,11 +39,11 @@ var CHAR_FREQUENCIES = [
   ['Z', 0.074]
 ];
 
-var BOARD_HEIGHT = 7;
-var BOARD_WIDTH = 7;
-var TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
+const BOARD_HEIGHT = 7;
+const BOARD_WIDTH = 7;
+const TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
 
-var TileBoard = class {
+class TileBoard {
   constructor(board) {
     this._shuffleAvailableCount = board ? board.shuffleAvailableCount : 0;
     this._rows = [];
