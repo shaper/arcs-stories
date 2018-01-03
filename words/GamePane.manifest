@@ -12,8 +12,9 @@ import 'Stats.schema'
 
 import 'https://$cdn/artifacts/People/Person.schema'
 
-particle MovePicker in 'source/MovePicker.js'
-  MovePicker(in Person person, inout Board board, inout Move move, inout Stats stats)
+particle GamePane in 'source/GamePane.js'
+  GamePane(in Person person, inout Board board, inout Move move, inout Stats stats)
   affordance dom
   consume root
+#    provide leaderboard
   description `play Words`

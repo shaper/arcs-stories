@@ -5,15 +5,21 @@
 # subject to an additional IP rights grant found at
 # http://polymer.github.io/PATENTS.txt
 
-import 'MovePicker.manifest'
+import 'GamePane.manifest'
 
 recipe
   use #user as person
   create #board as board
   create #move as move
   create #stats as stats
-  MovePicker
+  # map #friends_avatar as avatars
+  GamePane
     move = move
     board = board
     stats = stats
     person <- person
+
+#  LeaderboardPane
+#    avatars <- avatars
+#    person <- person
+#    stats = stats
