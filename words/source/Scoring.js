@@ -101,4 +101,7 @@ class Scoring {
     updatedValues['moveCount'] = stats.moveCount + 1;
     return updatedValues;
   }
+  static create() {
+    return { score: 0, moveCount: 0, startstamp: Date.now() };
+  }
 }

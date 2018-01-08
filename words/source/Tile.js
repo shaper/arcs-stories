@@ -37,4 +37,4 @@ class Tile {
       this.x
     }, y=${this.y}]`;
   }
-};
+}

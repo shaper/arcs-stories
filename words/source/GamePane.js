@@ -105,8 +105,6 @@ defineParticle(({ DomParticle, resolver }) => {
   const DICTIONARY_URL =
     'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/words-dictionary.txt';
 
-  const DEFAULT_SHUFFLE_AVAILABLE_COUNT = 3;
-
   const info = console.log.bind(
     console.log,
     '%cGamePane',
@@ -177,59 +175,45 @@ defineParticle(({ DomParticle, resolver }) => {
       let moveData = props.move ? props.move.rawData : { coordinates: '' };
       let moveTiles = this._moveToTiles(tileBoard, props.move);
       let score = 0;
-      if (!state.dictionary) return [moveData, moveTiles, score];
-      if (state.moveSubmitted) {
-        const word = this._tilesToWord(moveTiles);
-        if (!Scoring.isMinimumWordLength(moveTiles.length)) {
-          info(`Word is too short [word=${word}].`);
+      if (!state.dictionary || !state.moveSubmitted)
+        return [moveData, moveTiles, score];
+      const word = this._tilesToWord(moveTiles);
+      if (!Scoring.isMinimumWordLength(moveTiles.length)) {
+        info(`Word is too short [word=${word}].`);
+      } else {
+        let isInDictionary = state.dictionary.contains(word);
+        if (!isInDictionary) {
+          info(`Word is not in dictionary [word=${word}].`);
         } else {
-          let isInDictionary = state.dictionary.contains(word);
-          if (!isInDictionary) {
-            info(`Word is not in dictionary [word=${word}].`);
-          } else {
-            score = Scoring.wordScore(moveTiles);
-            info(`Scoring word [word=${word}, score=${score}].`);
-            tileBoard.applyMove(moveTiles);
-            this._setStats(Scoring.applyMoveStats(props.stats, word, score));
-            this._setBoard({
-              letters: tileBoard.toString,
-              shuffleAvailableCount: tileBoard.shuffleAvailableCount
-            });
-          }
+          score = Scoring.wordScore(moveTiles);
+          info(`Scoring word [word=${word}, score=${score}].`);
+          tileBoard.applyMove(moveTiles);
+          this._setStats(Scoring.applyMoveStats(props.stats, word, score));
+          this._setBoard({
+            letters: tileBoard.toString,
+            shuffleAvailableCount: tileBoard.shuffleAvailableCount
+          });
         }
-        moveData = { coordinates: '' };
-        this._setMove(moveData);
-        moveTiles = [];
       }
+      moveData = { coordinates: '' };
+      this._setMove(moveData);
+      moveTiles = [];
       return [moveData, moveTiles, score];
-    }
-    _generateBoard() {
-      let boardChars = '';
-      for (let i = 0; i < TILE_COUNT; i++)
-        boardChars += TileBoard.pickCharWithFrequencies();
-      this._setBoard({
-        letters: boardChars,
-        shuffleAvailableCount: DEFAULT_SHUFFLE_AVAILABLE_COUNT
-      });
-    }
-    _generateStats() {
-      this._setStats({ score: 0, moveCount: 0, startstamp: Date.now() });
     }
     _willReceiveProps(props, state) {
       // info('willReceiveProps [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
-      if (!props.board) this._generateBoard();
-      if (!props.stats) this._generateStats();
-      let tileBoardState = new TileBoard(props.board);
+      if (!props.board) this._setBoard(TileBoard.create());
+      if (!props.stats) this._setStats(Scoring.create());
+      const tileBoard = new TileBoard(props.board);
       let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
         props,
         state,
-        tileBoardState
+        tileBoard
       );
-      let moveState = Object.assign({}, moveData);
       this._setState({
-        tileBoard: tileBoardState,
-        move: moveState,
+        tileBoard: tileBoard,
+        move: moveData,
         selectedTiles: moveTiles,
         moveScore: Scoring.wordScore(moveTiles),
         score: props.stats ? props.stats.score : 0,
@@ -387,6 +371,8 @@ defineParticle(({ DomParticle, resolver }) => {
         }
       }
       state.move.coordinates = newCoordinates;
+      // TODO(wkorman): Consider making Move purely state.
+      this._setMove({ coordinates: newCoordinates });
       this._setState({
         move: state.move,
         lastTileMoused: state.lastTileMoused,
@@ -394,7 +380,6 @@ defineParticle(({ DomParticle, resolver }) => {
       });
     }
     _onSubmitMove(e, state) {
-      this._setMove({ coordinates: state.move.coordinates });
       this._setState({ moveSubmitted: true });
     }
     _onShuffle(e, state) {
@@ -407,16 +392,17 @@ defineParticle(({ DomParticle, resolver }) => {
       }
     }
     _setMove(values) {
-      const move = this._views.get('move');
-      move.set(new move.entityClass(values));
+      this._setView('move', values);
     }
     _setBoard(values) {
-      const board = this._views.get('board');
-      board.set(new board.entityClass(values));
+      this._setView('board', values);
     }
     _setStats(values) {
-      const stats = this._views.get('stats');
-      stats.set(new stats.entityClass(values));
+      this._setView('stats', values);
+    }
+    _setView(name, values) {
+      const view = this._views.get(name);
+      view.set(new view.entityClass(values));
     }
   };
 });

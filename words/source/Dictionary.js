@@ -29,4 +29,4 @@ class Dictionary {
   get size() {
     return this._dict.size;
   }
-};
+}
