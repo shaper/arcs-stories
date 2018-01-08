@@ -42,6 +42,7 @@ const CHAR_FREQUENCIES = [
 const BOARD_HEIGHT = 7;
 const BOARD_WIDTH = 7;
 const TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
+const DEFAULT_SHUFFLE_AVAILABLE_COUNT = 3;
 
 class TileBoard {
   constructor(board) {
@@ -178,6 +179,15 @@ class TileBoard {
   get toString() {
     return this._rows.map(r => r.map(c => c.letter).join('')).join('');
   }
+  static create() {
+    let boardChars = '';
+    for (let i = 0; i < TILE_COUNT; i++)
+      boardChars += TileBoard.pickCharWithFrequencies();
+    return {
+      letters: boardChars,
+      shuffleAvailableCount: DEFAULT_SHUFFLE_AVAILABLE_COUNT
+    };
+  }
   static pickCharWithFrequencies() {
     let pick = Math.random() * 100;
     let accumulator = 0;
@@ -193,7 +203,7 @@ class TileBoard {
   static indexToY(index) {
     return Math.floor(index / BOARD_HEIGHT);
   }
-};
+}
 
 TileBoard.info = console.log.bind(
   console.log,
