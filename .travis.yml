@@ -4,3 +4,7 @@ node_js:
 env:
   - TEST_DIR=words
 script: cd $TEST_DIR && npm install && npm test
+# Below forces Travis instance to use Trusty, as a workaround for some sort
+# of issue that breaks mocha-chrome runs.
+# See also https://github.com/travis-ci/travis-ci/issues/8836
+sudo: required
