@@ -200,8 +200,8 @@ defineParticle(({ DomParticle, resolver }) => {
       moveTiles = [];
       return [moveData, moveTiles, score];
     }
-    _willReceiveProps(props, state) {
-      // info('willReceiveProps [props=', props, 'state=', state, '].');
+    _update(props, state, lastProps, lastState) {
+      // info('update [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
       if (!props.board) this._setBoard(TileBoard.create());
       if (!props.stats) this._setStats(Scoring.create());
@@ -219,6 +219,7 @@ defineParticle(({ DomParticle, resolver }) => {
         score: props.stats ? props.stats.score : 0,
         moveSubmitted: false
       });
+      super._update(props, state, lastProps, lastState);
     }
     _topPixelForHorizontalTransition(fromTile, toTile) {
       let topPixel = fromTile.y * 50 + 18 + fromTile.y;
