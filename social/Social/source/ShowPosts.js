@@ -9,14 +9,13 @@
 "use strict";
 
 defineParticle(({DomParticle}) => {
-
-  let template = `
+  const template = `
 <style>
   .material-icons.md-14 { font-size: 14px; }
 
   [msg] {
-    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;  
-    font-size: 9pt;  
+    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+    font-size: 9pt;
   }
   [msg] input {
     border: none;
@@ -33,7 +32,7 @@ defineParticle(({DomParticle}) => {
     margin: 20px;
     padding-bottom: 3px;
     border-bottom: solid 0.5px;
-    border-bottom-color: #d4d4d4;    
+    border-bottom-color: #d4d4d4;
     width: 320px;
   }
   [msg] [title] {
@@ -64,43 +63,43 @@ defineParticle(({DomParticle}) => {
       }
     }
     _onClick(e, state) {
-      this._views.get('posts').remove(state.posts[e.data.value]);
+      const targetPost = state.posts.find(p => p.id == e.data.value);
+      this._views.get('posts').remove(targetPost);
     }
     _timeSince(time) {
-      var interval = Math.floor((new Date() - new Date(time)) / 1000);
+      let interval = Math.floor((new Date() - new Date(time)) / 1000);
       if (interval < 60) {
         return interval + " seconds";
       }
       interval = Math.floor(interval / 60);
       if (interval < 60) {
-        return interval + " minutes";        
+        return interval + " minutes";
       }
       interval = Math.floor(interval / 60);
       if (interval < 24) {
-        return interval + " hours";        
+        return interval + " hours";
       }
       return time;
     }
-    _render(props, state) {
-      if (state.posts) {
-        let posts = state.posts.map((t, i) => {
-          t.date = new Date(t.time);
-          t.id = i;
-          return t;
-        });
-        posts.sort((a, b) => {
-          return b.date.getTime() - a.date.getTime();
-        });
-        return {
-          posts: posts.map(post => {
-            return { name: post.name,
-                     id: post.id,
-                     time: this._timeSince(post.time),
-                     style: { display: this._views.get('posts').canWrite ? 'inline' : 'none' },
-                     owner: post.owner ? post.owner : props.user.name };   
-          })
-        };
-      }
+    _render(props, {posts}) {
+      if (!posts) return;
+      // const posts = state.posts.map((t, i) => {
+      //   t.date = new Date(t.time);
+      //   t.id = i;
+      //   return t;
+      // });
+      posts.sort((a, b) => {
+        return new Date(b).getTime() - new Date(a).getTime();
+      });
+      return {
+        posts: posts.map(post => {
+          return { name: post.name,
+                   id: post.id,
+                   time: this._timeSince(post.time),
+                   style: { display: this._views.get('posts').canWrite ? 'inline' : 'none' },
+                   owner: post.owner ? post.owner : props.user.name };
+        })
+      };
     }
   };
 });
