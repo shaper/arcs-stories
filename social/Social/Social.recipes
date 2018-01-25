@@ -23,6 +23,7 @@ recipe
   # Right now, only set handles from friends are collated together ==> my posts
   # will not appear on the feed.
   map 'FRIENDS_PROFILE_posts' #friends_posts as posts
+  # map #posts as posts
   use #user as user
 
   OnlyShowPosts

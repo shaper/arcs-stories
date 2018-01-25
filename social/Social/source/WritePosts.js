@@ -11,8 +11,7 @@
 "use strict";
 
 defineParticle(({DomParticle}) => {
-
-  let template = `
+  const template = `
 <style>
   [edit] input {
     border: none;
