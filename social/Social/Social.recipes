@@ -6,9 +6,10 @@
 # subject to an additional IP rights grant found at
 # http://polymer.github.io/PATENTS.txt
 
-import 'https://$cdn/artifacts/Things/Thing.schema'
 import 'Particles.manifest'
 
+# Allows creating multiple posts by the author and viewing all posts created
+# in this Arc.
 recipe
   create #posts as posts
   use #user as user
@@ -19,6 +20,7 @@ recipe
     posts = posts
     user <- user
 
+# A feed that aggregates everything a user and friends say.
 recipe
   # Right now, only set handles from friends are collated together ==> my posts
   # will not appear on the feed.

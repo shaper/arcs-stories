@@ -6,9 +6,9 @@
 // subject to an additional IP rights grant found at
 // http://polymer.github.io/PATENTS.txt
 
-"use strict";
+'use strict';
 
-defineParticle(({DomParticle}) => {
+defineParticle(({ DomParticle }) => {
   const template = `
 <style>
   .material-icons.md-14 { font-size: 14px; }
@@ -58,48 +58,54 @@ defineParticle(({DomParticle}) => {
       return template;
     }
     _willReceiveProps(props) {
-      if (props.posts) {
-        this._setState({posts: props.posts});
-      }
+      if (props.posts) this._setState({ posts: props.posts });
     }
     _onClick(e, state) {
       const targetPost = state.posts.find(p => p.id == e.data.value);
-      this._views.get('posts').remove(targetPost);
+      if (targetPost) this._views.get('posts').remove(targetPost);
     }
     _timeSince(time) {
       let interval = Math.floor((new Date() - new Date(time)) / 1000);
       if (interval < 60) {
-        return interval + " seconds";
+        return interval + ' seconds';
       }
       interval = Math.floor(interval / 60);
       if (interval < 60) {
-        return interval + " minutes";
+        return interval + ' minutes';
       }
       interval = Math.floor(interval / 60);
       if (interval < 24) {
-        return interval + " hours";
+        return interval + ' hours';
       }
       return time;
     }
-    _render(props, {posts}) {
-      if (!posts) return;
-      // const posts = state.posts.map((t, i) => {
-      //   t.date = new Date(t.time);
-      //   t.id = i;
-      //   return t;
-      // });
-      posts.sort((a, b) => {
-        return new Date(b).getTime() - new Date(a).getTime();
+    _sortPostsByDateAscending(posts) {
+      return posts.sort((a, b) => {
+        return Date.parse(b.time) - Date.parse(a.time);
       });
+    }
+    _postToModel(viewingUserName, visible, post) {
       return {
-        posts: posts.map(post => {
-          return { name: post.name,
-                   id: post.id,
-                   time: this._timeSince(post.time),
-                   style: { display: this._views.get('posts').canWrite ? 'inline' : 'none' },
-                   owner: post.owner ? post.owner : props.user.name };
-        })
+        name: post.name,
+        id: post.id,
+        time: this._timeSince(post.time),
+        style: { display: visible ? 'inline' : 'none' },
+        owner: post.owner ? post.owner : viewingUserName
       };
+    }
+    _render(props, { posts }) {
+      if (posts) {
+        const sortedPosts = this._sortPostsByDateAscending(posts);
+        const viewingUserName = props.user.name;
+        // TODO(wkorman): Visibility seems like it's all or nothing. What was
+        // this originally intended to do?
+        const visible = this._views.get('posts').canWrite;
+        return {
+          posts: sortedPosts.map(p =>
+            this._postToModel(viewingUserName, visible, p)
+          )
+        };
+      }
     }
   };
 });
