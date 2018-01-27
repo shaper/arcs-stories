@@ -7,7 +7,6 @@
 # http://polymer.github.io/PATENTS.txt
 
 import 'https://$cdn/artifacts/People/Person.schema'
-import 'https://$cdn/artifacts/Things/Thing.schema'
 import 'Post.manifest'
 
 particle ShowPosts in 'source/ShowPosts.js'
