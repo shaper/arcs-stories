@@ -13,12 +13,14 @@ import 'Particles.manifest'
 recipe
   create #posts as posts
   use #user as user
+  use #identities as people
 
   WritePosts
     posts -> posts
   ShowPosts
     posts = posts
     user <- user
+    people <- people
 
 # A feed that aggregates everything a user and friends say.
 recipe
@@ -26,7 +28,9 @@ recipe
   # will not appear on the feed.
   map #friends_posts as posts
   use #user as user
+  use #identities as people
 
   OnlyShowPosts
     posts <- posts
     user <- user
+    people <- people

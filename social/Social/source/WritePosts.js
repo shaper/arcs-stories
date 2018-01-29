@@ -49,7 +49,7 @@ defineParticle(({DomParticle}) => {
     _onNameChange(e, state) {
       const Post = this._views.get('posts').entityClass;
       this._views.get('posts').store(
-          new Post({name: e.data.value, time: new Date().toLocaleString()}));
+          new Post({name: e.data.value, createdTimestamp: Date.now()}));
       // Set the state to trigger render().
       this._setState({name: ''});
     }
