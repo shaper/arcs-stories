@@ -11,4 +11,5 @@ import 'https://$cdn/artifacts/Things/Thing.schema'
 schema Post extends Thing
   normative
     Text time
+  optional
     Text owner
