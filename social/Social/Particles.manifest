@@ -10,12 +10,12 @@ import 'https://$cdn/artifacts/People/Person.schema'
 import 'Post.manifest'
 
 particle ShowPosts in 'source/ShowPosts.js'
-  ShowPosts(inout [Post] posts, in Person user)
+  ShowPosts(inout [Post] posts, in Person user, in [Person] people)
   consume root
   description `show ${posts}`
 
 particle OnlyShowPosts in 'source/ShowPosts.js'
-  OnlyShowPosts(in [Post] posts, in Person user)
+  OnlyShowPosts(in [Post] posts, in Person user, in [Person] people)
   consume root
   description `show ${posts}`
 

@@ -57,9 +57,16 @@ defineParticle(({DomParticle}) => {
     get template() {
       return template;
     }
+    _peopleSetToMap(people) {
+      const peopleMap = {};
+      if (people)
+        people.map(p => peopleMap[p.id] = p.name);
+      return peopleMap;
+    }
     _willReceiveProps(props) {
       if (props.posts)
-        this._setState({posts: props.posts});
+        this._setState(
+            {posts: props.posts, people: this._peopleSetToMap(props.people)});
     }
     _onClick(e, state) {
       const targetPost = state.posts.find(p => p.id == e.data.value);
@@ -67,7 +74,7 @@ defineParticle(({DomParticle}) => {
         this._views.get('posts').remove(targetPost);
     }
     _timeSince(time) {
-      let interval = Math.floor((new Date() - new Date(time)) / 1000);
+      let interval = Math.floor((Date.now() - time) / 1000);
       if (interval < 60) {
         return interval + ' seconds';
       }
@@ -83,16 +90,16 @@ defineParticle(({DomParticle}) => {
     }
     _sortPostsByDateAscending(posts) {
       return posts.sort((a, b) => {
-        return Date.parse(b.time) - Date.parse(a.time);
+        return b.createdTimestamp - a.createdTimestamp;
       });
     }
     _postToModel(viewingUserName, visible, post) {
       return {
         name: post.name,
         id: post.id,
-        time: this._timeSince(post.time),
+        time: this._timeSince(post.createdTimestamp),
         style: {display: visible ? 'inline' : 'none'},
-        owner: post.owner ? post.owner : viewingUserName
+        owner: post.owner ? this._state.people[post.owner] : viewingUserName
       };
     }
     _render(props, {posts}) {
