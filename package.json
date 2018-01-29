@@ -1,0 +1,8 @@
+{
+  "name": "arcs-stories",
+  "version": "0.0.1",
+  "private": "true",
+  "dependencies": {
+    "clang-format": "^1.2.2"
+  }
+}

@@ -8,7 +8,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-"use strict";
+'use strict';
 
 defineParticle(({DomParticle}) => {
   const template = `
@@ -48,7 +48,8 @@ defineParticle(({DomParticle}) => {
     }
     _onNameChange(e, state) {
       const Post = this._views.get('posts').entityClass;
-      this._views.get('posts').store(new Post({name: e.data.value, time: new Date().toLocaleString()}));
+      this._views.get('posts').store(
+          new Post({name: e.data.value, time: new Date().toLocaleString()}));
       // Set the state to trigger render().
       this._setState({name: ''});
     }

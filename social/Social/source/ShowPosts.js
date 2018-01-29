@@ -8,7 +8,7 @@
 
 'use strict';
 
-defineParticle(({ DomParticle }) => {
+defineParticle(({DomParticle}) => {
   const template = `
 <style>
   .material-icons.md-14 { font-size: 14px; }
@@ -58,11 +58,13 @@ defineParticle(({ DomParticle }) => {
       return template;
     }
     _willReceiveProps(props) {
-      if (props.posts) this._setState({ posts: props.posts });
+      if (props.posts)
+        this._setState({posts: props.posts});
     }
     _onClick(e, state) {
       const targetPost = state.posts.find(p => p.id == e.data.value);
-      if (targetPost) this._views.get('posts').remove(targetPost);
+      if (targetPost)
+        this._views.get('posts').remove(targetPost);
     }
     _timeSince(time) {
       let interval = Math.floor((new Date() - new Date(time)) / 1000);
@@ -89,11 +91,11 @@ defineParticle(({ DomParticle }) => {
         name: post.name,
         id: post.id,
         time: this._timeSince(post.time),
-        style: { display: visible ? 'inline' : 'none' },
+        style: {display: visible ? 'inline' : 'none'},
         owner: post.owner ? post.owner : viewingUserName
       };
     }
-    _render(props, { posts }) {
+    _render(props, {posts}) {
       if (posts) {
         const sortedPosts = this._sortPostsByDateAscending(posts);
         const viewingUserName = props.user.name;
@@ -101,9 +103,8 @@ defineParticle(({ DomParticle }) => {
         // this originally intended to do?
         const visible = this._views.get('posts').canWrite;
         return {
-          posts: sortedPosts.map(p =>
-            this._postToModel(viewingUserName, visible, p)
-          )
+          posts: sortedPosts.map(
+              p => this._postToModel(viewingUserName, visible, p))
         };
       }
     }
