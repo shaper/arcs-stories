@@ -9,7 +9,7 @@
  */
 'use strict';
 
-defineParticle(({ DomParticle, resolver }) => {
+defineParticle(({DomParticle, resolver}) => {
   function importLibrary(filename) {
     importScripts(resolver(`GamePane/${filename}`));
   }
@@ -35,8 +35,8 @@ defineParticle(({ DomParticle, resolver }) => {
      padding-bottom: 0.5em;
    }
    [${host}] .board {
-     height: 356px;
-     width: 356px;
+     height: 382px;
+     width: 357px;
      position: relative;
      user-select: none;
      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -62,13 +62,55 @@ defineParticle(({ DomParticle, resolver }) => {
      right: 0.2em;
      color: #cc6600;
    }
-   [${host}] .board .selected,
-   [${host}] .board .selected .points {
+   [${host}] .board .selected {
      background-color: goldenrod;
+     color: white;
+   }
+   [${host}] .board .selected .points {
+     color: white;
+   }
+   [${host}] .board .fire {
+     animation-name: fire;
+     animation-duration: 3s;
+     animation-iteration-count: infinite;
+     background-color: #ff9999;
+     color: white;
+   }
+   [${host}] .board .fire.selected {
+     animation-name: fireSelected;
+     animation-duration: 3s;
+     animation-iteration-count: infinite;
+     background-color: #ff99ff;
+   }
+   [${host}] .board .fire .points {
      color: white;
    }
    [${host}] .board .annotation {
      position: absolute;
+   }
+   [${host}] .gameOver {
+     text-align: center;
+     font-size: 48px;
+     color: red;
+     width: 100%;
+     height: 100%;
+     opacity: 0.5;
+     background-color: black;
+     position: relative;
+     z-index: 1000;
+     line-height: 381px;
+     vertical-align: middle;
+     cursor: default;
+   }
+   @keyframes fire {
+     0% { background-color: #ff9999; }
+     50% { background-color: #ff0000; }
+     100% { background-color: #ff9999; }
+   }
+   @keyframes fireSelected {
+     0% { background-color: #ff99ff; }
+     50% { background-color: #ff3399; }
+     100% { background-color: #ff99ff; }
    }
  </style>
    `;
@@ -87,10 +129,12 @@ defineParticle(({ DomParticle, resolver }) => {
      <div class="shuffle">Shuffles Remaining: <span>{{shuffleAvailableCount}}</span></div>
      <div>
        <button disabled="{{submitMoveDisabled}}" on-click="_onSubmitMove">Submit Move</button>
-       <button style%="padding-left: 2em" on-click="_onShuffle">Shuffle</button>
+       <button disabled="{{shuffleDisabled}}" style%="padding-left: 2em" on-click="_onShuffle">Shuffle</button>
      </div>
    </div>
-   <div class="board"><span>{{boardCells}}</span><span>{{annotations}}</span></div>
+   <div class="board">
+   <div class="gameOver" hidden="{{hideGameOver}}">Game Over</div>
+     <span>{{boardCells}}</span><span>{{annotations}}</span></div>
  </div>
  <template board-cell>
    <div class="{{classes}}" style%="{{style}}" on-mousedown="_onTileMouseDown" on-mouseup="_onTileMouseUp" on-mouseover="_onTileMouseOver" value="{{index}}">
@@ -103,13 +147,12 @@ defineParticle(({ DomParticle, resolver }) => {
       `.trim();
 
   const DICTIONARY_URL =
-    'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/words-dictionary.txt';
+      'https://raw.githubusercontent.com/shaper/shaper.github.io/master/resources/words-dictionary.txt';
 
   const info = console.log.bind(
-    console.log,
-    '%cGamePane',
-    `background: #ff69b4; color: white; padding: 1px 6px 2px 7px; border-radius: 6px;`
-  );
+      console.log,
+      '%cGamePane',
+      `background: #ff69b4; color: white; padding: 1px 6px 2px 7px; border-radius: 6px;`);
 
   return class extends DomParticle {
     get template() {
@@ -121,9 +164,12 @@ defineParticle(({ DomParticle, resolver }) => {
         const tile = tileBoard.tileAtIndex(i);
         const letterClasses = ['tile'];
         let yPixels = tile.y * 50 + tile.y;
-        if (tile.isShiftedDown) yPixels += 25;
+        if (tile.isShiftedDown)
+          yPixels += 25;
         if (coordinates.indexOf(`(${tile.x},${tile.y})`) != -1)
           letterClasses.push('selected');
+        if (tile.style == Tile.Style.FIRE)
+          letterClasses.push('fire');
         models.push({
           letter: tile.letter,
           points: Scoring.pointsForLetter(tile.letter),
@@ -136,7 +182,8 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _moveToTiles(tileBoard, move) {
       let tiles = [];
-      if (!tileBoard || !move || !move.coordinates) return tiles;
+      if (!tileBoard || !move || !move.coordinates)
+        return tiles;
       // TODO(wkorman): If move coordinates were stored as a list of x/y tuples
       // this would be much simpler.
       const tuples = move.coordinates.match(/(\d+,\d+)/g);
@@ -149,30 +196,26 @@ defineParticle(({ DomParticle, resolver }) => {
       return tiles;
     }
     _ensureDictionaryLoaded(state) {
-      if (state.dictionaryLoadingStarted) return;
+      if (state.dictionaryLoadingStarted)
+        return;
 
-      this._setState({ dictionaryLoadingStarted: true });
+      this._setState({dictionaryLoadingStarted: true});
       const particleRef = this;
       const startstamp = performance.now();
-      fetch(DICTIONARY_URL).then(response =>
-        response.text().then(text => {
-          const dictionary = new Dictionary(text);
-          const endstamp = performance.now();
-          const elapsed = Math.floor(endstamp - startstamp);
-          info(
-            `Loaded dictionary [time=${elapsed}ms, wordCount=${
-              dictionary.size
-            }].`
-          );
-          particleRef._setState({ dictionary: dictionary });
-        })
-      );
+      fetch(DICTIONARY_URL).then(response => response.text().then(text => {
+        const dictionary = new Dictionary(text);
+        const endstamp = performance.now();
+        const elapsed = Math.floor(endstamp - startstamp);
+        info(`Loaded dictionary [time=${elapsed}ms, wordCount=${
+            dictionary.size}].`);
+        particleRef._setState({dictionary: dictionary});
+      }));
     }
     _tilesToWord(tiles) {
       return tiles.map(t => t.letter).join('');
     }
     _processSubmittedMove(props, state, tileBoard) {
-      let moveData = props.move ? props.move.rawData : { coordinates: '' };
+      let moveData = props.move ? props.move.rawData : {coordinates: ''};
       let moveTiles = this._moveToTiles(tileBoard, props.move);
       let score = 0;
       if (!state.dictionary || !state.moveSubmitted)
@@ -180,22 +223,21 @@ defineParticle(({ DomParticle, resolver }) => {
       const word = this._tilesToWord(moveTiles);
       if (!Scoring.isMinimumWordLength(moveTiles.length)) {
         info(`Word is too short [word=${word}].`);
+      } else if (!state.dictionary.contains(word)) {
+        info(`Word is not in dictionary [word=${word}].`);
       } else {
-        let isInDictionary = state.dictionary.contains(word);
-        if (!isInDictionary) {
-          info(`Word is not in dictionary [word=${word}].`);
-        } else {
-          score = Scoring.wordScore(moveTiles);
-          info(`Scoring word [word=${word}, score=${score}].`);
-          tileBoard.applyMove(moveTiles);
-          this._setStats(Scoring.applyMoveStats(props.stats, word, score));
-          this._setBoard({
-            letters: tileBoard.toString,
-            shuffleAvailableCount: tileBoard.shuffleAvailableCount
-          });
-        }
+        score = Scoring.wordScore(moveTiles);
+        info(`Scoring word [word=${word}, score=${score}].`);
+        const gameOver = tileBoard.applyMove(moveTiles);
+        if (gameOver) info('Ending game.');
+        this._setStats(Scoring.applyMoveStats(props.stats, word, score));
+        this._setBoard({
+          letters: tileBoard.toString,
+          shuffleAvailableCount: tileBoard.shuffleAvailableCount,
+          state: TileBoard.StateToNumber[gameOver ? TileBoard.State.GAME_OVER : TileBoard.State.ACTIVE]
+        });
       }
-      moveData = { coordinates: '' };
+      moveData = {coordinates: ''};
       this._setMove(moveData);
       moveTiles = [];
       return [moveData, moveTiles, score];
@@ -203,14 +245,17 @@ defineParticle(({ DomParticle, resolver }) => {
     _update(props, state, lastProps, lastState) {
       // info('update [props=', props, 'state=', state, '].');
       this._ensureDictionaryLoaded(state);
-      if (!props.board) this._setBoard(TileBoard.create());
-      if (!props.stats) this._setStats(Scoring.create());
-      const tileBoard = new TileBoard(props.board);
-      let [moveData, moveTiles, moveScore] = this._processSubmittedMove(
-        props,
-        state,
-        tileBoard
-      );
+      let propsBoard = props.board;
+      if (!propsBoard) {
+        propsBoard = TileBoard.create();
+        this._setBoard(propsBoard);
+      }
+      if (!props.stats)
+        this._setStats(Scoring.create());
+      const tileBoard = new TileBoard(propsBoard);
+      propsBoard.chanceOfFireOnRefill = TileBoard.CHANCE_OF_FIRE_ON_REFILL;
+      let [moveData, moveTiles, moveScore] =
+          this._processSubmittedMove(props, state, tileBoard);
       this._setState({
         tileBoard: tileBoard,
         move: moveData,
@@ -225,11 +270,15 @@ defineParticle(({ DomParticle, resolver }) => {
       let topPixel = fromTile.y * 50 + 18 + fromTile.y;
       if (fromTile.isShiftedDown) {
         topPixel += 25;
-        if (toTile.y == fromTile.y) topPixel -= 12;
-        else topPixel += 12;
+        if (toTile.y == fromTile.y)
+          topPixel -= 12;
+        else
+          topPixel += 12;
       } else {
-        if (toTile.y == fromTile.y) topPixel += 12;
-        else topPixel -= 12;
+        if (toTile.y == fromTile.y)
+          topPixel += 12;
+        else
+          topPixel -= 12;
       }
       return topPixel;
     }
@@ -241,83 +290,68 @@ defineParticle(({ DomParticle, resolver }) => {
         contentText = '→';
         const tilesFromRight = BOARD_WIDTH - fromTile.x - 1;
         let topPixel = this._topPixelForHorizontalTransition(fromTile, toTile);
-        positionText = `top: ${topPixel}px; right: ${tilesFromRight * 50 +
-          tilesFromRight -
-          9}px;`;
+        positionText = `top: ${topPixel}px; right: ${
+            tilesFromRight * 50 + tilesFromRight - 9}px;`;
       } else if (toTile.x < fromTile.x) {
         contentText = '←';
         let topPixel = this._topPixelForHorizontalTransition(fromTile, toTile);
-        positionText = `top: ${topPixel}px; left: ${fromTile.x * 50 +
-          fromTile.x -
-          9}px;`;
+        positionText =
+            `top: ${topPixel}px; left: ${fromTile.x * 50 + fromTile.x - 9}px;`;
       } else if (toTile.y > fromTile.y) {
         contentText = '↓';
         let topPixel = (fromTile.y + 1) * 50 - 7 + fromTile.y;
-        if (fromTile.isShiftedDown) topPixel += 25;
-        positionText = `top: ${topPixel}px; left: ${fromTile.x * 50 +
-          fromTile.x +
-          22}px;`;
+        if (fromTile.isShiftedDown)
+          topPixel += 25;
+        positionText =
+            `top: ${topPixel}px; left: ${fromTile.x * 50 + fromTile.x + 22}px;`;
       } else {
         contentText = '↑';
         let topPixel = fromTile.y * 50 - 9 + fromTile.y;
-        if (fromTile.isShiftedDown) topPixel += 25;
-        positionText = `top: ${topPixel}px; left: ${fromTile.x * 50 +
-          fromTile.x +
-          22}px;`;
+        if (fromTile.isShiftedDown)
+          topPixel += 25;
+        positionText =
+            `top: ${topPixel}px; left: ${fromTile.x * 50 + fromTile.x + 22}px;`;
       }
       return [contentText, positionText];
     }
     _selectedTilesToModels(selectedTiles) {
       let models = [];
-      if (selectedTiles.length < 2) return models;
+      if (selectedTiles.length < 2)
+        return models;
       for (let i = 0; i < selectedTiles.length - 1; i++) {
         let [contentText, positionText] = this._tileTransitionToTextAndPosition(
-          selectedTiles[i],
-          selectedTiles[i + 1]
-        );
-        models.push({
-          style: positionText,
-          content: contentText
-        });
+            selectedTiles[i], selectedTiles[i + 1]);
+        models.push({style: positionText, content: contentText});
       }
       return models;
     }
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
       if (!state.tileBoard)
-        return {
-          hideDictionaryLoading: false,
-          hideGameInfo: true
-        };
+        return {hideDictionaryLoading: false, hideGameInfo: true, hideGameOver: true};
       let boardModels = this._boardToModels(
-        state.tileBoard,
-        state.move ? state.move.coordinates : ''
-      );
+          state.tileBoard, state.move ? state.move.coordinates : '');
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
       const word = this._tilesToWord(state.selectedTiles);
       const moveText = `${word} (${Scoring.wordScore(state.selectedTiles)})`;
       const submitMoveEnabled =
-        Scoring.isMinimumWordLength(state.selectedTiles.length) &&
-        state.dictionary.contains(word);
+          Scoring.isMinimumWordLength(state.selectedTiles.length) &&
+          state.dictionary.contains(word);
+      const gameOver = state.tileBoard.state == TileBoard.State.GAME_OVER;
       return {
-        annotations: {
-          $template: 'annotation',
-          models: annotationModels
-        },
-        boardCells: {
-          $template: 'board-cell',
-          models: boardModels
-        },
+        annotations: {$template: 'annotation', models: annotationModels},
+        boardCells: {$template: 'board-cell', models: boardModels},
         move: moveText,
         longestWord: Scoring.longestWordText(props.stats),
         highestScoringWord: Scoring.highestScoringWordText(props.stats),
         shuffleAvailableCount: state.tileBoard.shuffleAvailableCount,
-        score: `${state.score} (${
-          props.stats ? props.stats.moveCount : 0
-        } moves)`,
-        submitMoveDisabled: !submitMoveEnabled,
+        score:
+            `${state.score} (${props.stats ? props.stats.moveCount : 0} moves)`,
+        submitMoveDisabled: gameOver || !submitMoveEnabled,
+        shuffleDisabled: gameOver,
         hideDictionaryLoading: true,
-        hideGameInfo: false
+        hideGameInfo: false,
+        hideGameOver: !gameOver
       };
     }
     _onTileMouseDown(e, state) {
@@ -326,9 +360,7 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _onTileMouseUp(e, state) {
       state.lastTileMoused = null;
-      this._setState({
-        lastTileMoused: state.lastTileMoused
-      });
+      this._setState({lastTileMoused: state.lastTileMoused});
     }
     _onTileMouseOver(e, state) {
       if (state.lastTileMoused && state.lastTileMoused != e.data.value) {
@@ -338,28 +370,26 @@ defineParticle(({ DomParticle, resolver }) => {
     }
     _selectTile(e, state) {
       const tile = state.tileBoard.tileAtIndex(e.data.value);
-      let lastSelectedTile =
-        state.selectedTiles.length == 0
-          ? undefined
-          : state.selectedTiles[state.selectedTiles.length - 1];
+      let lastSelectedTile = state.selectedTiles.length == 0 ?
+          undefined :
+          state.selectedTiles[state.selectedTiles.length - 1];
       // info(
       //   `_selectTile [tile=${tile.toString}, lastSelectedTile=${
       //     lastSelectedTile ? lastSelectedTile.toString : 'undefined'
       //   }].`
       // );
-      if (!state.tileBoard.isMoveValid(state.selectedTiles, tile)) return;
+      if (!state.tileBoard.isMoveValid(state.selectedTiles, tile))
+        return;
       let newCoordinates = '';
-      if (
-        lastSelectedTile &&
-        lastSelectedTile.x == tile.x &&
-        lastSelectedTile.y == tile.y
-      ) {
+      if (lastSelectedTile && lastSelectedTile.x == tile.x &&
+          lastSelectedTile.y == tile.y) {
         // User clicked on same tile last clicked, so de-select it.
         state.selectedTiles.pop();
         // We could pop the last tuple but it's easier to just rebuild,
         // and hopefully we'll move away from a string tuple hack soon.
         for (let i = 0; i < state.selectedTiles.length; i++) {
-          if (i > 0) newCoordinates += ',';
+          if (i > 0)
+            newCoordinates += ',';
           let buildTile = state.selectedTiles[i];
           newCoordinates += `(${buildTile.x},${buildTile.y})`;
         }
@@ -373,7 +403,7 @@ defineParticle(({ DomParticle, resolver }) => {
       }
       state.move.coordinates = newCoordinates;
       // TODO(wkorman): Consider making Move purely state.
-      this._setMove({ coordinates: newCoordinates });
+      this._setMove({coordinates: newCoordinates});
       this._setState({
         move: state.move,
         lastTileMoused: state.lastTileMoused,
@@ -381,7 +411,7 @@ defineParticle(({ DomParticle, resolver }) => {
       });
     }
     _onSubmitMove(e, state) {
-      this._setState({ moveSubmitted: true });
+      this._setState({moveSubmitted: true});
     }
     _onShuffle(e, state) {
       info(`Shuffling [remaining=${state.tileBoard.shuffleAvailableCount}].`);

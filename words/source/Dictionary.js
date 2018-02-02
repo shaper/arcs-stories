@@ -20,7 +20,8 @@ class Dictionary {
     this._dict = new Set();
     for (const wordEntry of words.split('\n')) {
       const trimmedWord = wordEntry.trim();
-      if (trimmedWord.length > 0) this._dict.add(trimmedWord.toUpperCase());
+      if (trimmedWord.length > 0)
+        this._dict.add(trimmedWord.toUpperCase());
     }
   }
   contains(word) {
