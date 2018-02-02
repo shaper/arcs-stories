@@ -11,31 +11,11 @@
 
 // Taken from Wikipedia at https://goo.gl/f4NJEq.
 const CHAR_FREQUENCIES = [
-  ['A', 8.167],
-  ['B', 1.492],
-  ['C', 2.782],
-  ['D', 4.253],
-  ['E', 12.702],
-  ['F', 2.228],
-  ['G', 2.015],
-  ['H', 6.094],
-  ['I', 6.966],
-  ['J', 0.153],
-  ['K', 0.772],
-  ['L', 4.025],
-  ['M', 2.406],
-  ['N', 6.749],
-  ['O', 7.507],
-  ['P', 1.929],
-  ['Q', 0.095],
-  ['R', 5.987],
-  ['S', 6.327],
-  ['T', 9.056],
-  ['U', 2.758],
-  ['V', 0.978],
-  ['W', 2.36],
-  ['X', 0.15],
-  ['Y', 1.974],
+  ['A', 8.167], ['B', 1.492], ['C', 2.782], ['D', 4.253], ['E', 12.702],
+  ['F', 2.228], ['G', 2.015], ['H', 6.094], ['I', 6.966], ['J', 0.153],
+  ['K', 0.772], ['L', 4.025], ['M', 2.406], ['N', 6.749], ['O', 7.507],
+  ['P', 1.929], ['Q', 0.095], ['R', 5.987], ['S', 6.327], ['T', 9.056],
+  ['U', 2.758], ['V', 0.978], ['W', 2.36],  ['X', 0.15],  ['Y', 1.974],
   ['Z', 0.074]
 ];
 
@@ -43,22 +23,26 @@ const BOARD_HEIGHT = 7;
 const BOARD_WIDTH = 7;
 const TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
 const DEFAULT_SHUFFLE_AVAILABLE_COUNT = 3;
+// TODO(wkorman): Fire chance should probably vary by level.
+const CHANCE_OF_FIRE_ON_REFILL = 0.05;
 
 class TileBoard {
   constructor(board) {
-    this._shuffleAvailableCount = board ? board.shuffleAvailableCount : 0;
+    console.assert(board, 'Input board values must not be null.');
+    this._shuffleAvailableCount = board.shuffleAvailableCount;
+    this._state = board.state !== undefined ?
+        TileBoard.NumberToState[board.state] :
+        TileBoard.State.ACTIVE;
     this._rows = [];
+    this._chanceOfFire = 0;
     let colCount = 0;
     let rowCount = 0;
-    let letters;
-    if (board) {
-      letters = board.letters;
-    } else {
-      for (let i = 0; i < TILE_COUNT; i++) letters += 'Z';
-    }
-    for (let i = 0; i < letters.length; i++) {
-      if (colCount == 0) this._rows.push([]);
-      this._rows[rowCount][colCount] = new Tile(i, letters[i]);
+    let letters = board.letters;
+    for (let i = 0; i < letters.length; i += 2) {
+      if (colCount == 0)
+        this._rows.push([]);
+      const style = Tile.NumberToStyle[parseInt(letters.charAt(i + 1))];
+      this._rows[rowCount][colCount] = new Tile(i / 2, letters[i], style);
       if (colCount == BOARD_WIDTH - 1) {
         colCount = 0;
         rowCount++;
@@ -67,8 +51,12 @@ class TileBoard {
       }
     }
   }
+  set chanceOfFireOnRefill(value) { this._chanceOfFire = value; }
   get shuffleAvailableCount() {
     return this._shuffleAvailableCount;
+  }
+  get state() {
+    return this._state;
   }
   get size() {
     return TILE_COUNT;
@@ -84,7 +72,8 @@ class TileBoard {
   }
   isMoveValid(selectedTiles, tile) {
     // Initial moves are considered valid.
-    if (selectedTiles.length == 0) return true;
+    if (selectedTiles.length == 0)
+      return true;
     // Selecting the last selected tile is permitted so as to de-select.
     let lastSelectedTile = selectedTiles[selectedTiles.length - 1];
     if (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y)
@@ -92,41 +81,47 @@ class TileBoard {
     // Else the new selection must touch the last selection and can't
     // already be selected.
     let touchesLastSelectedTile =
-      // Above.
-      (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y - 1) ||
-      // Below.
-      (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y + 1) ||
-      // Right.
-      (lastSelectedTile.x == tile.x - 1 && lastSelectedTile.y == tile.y) ||
-      // Right and offset below.
-      (lastSelectedTile.x == tile.x - 1 &&
-        lastSelectedTile.isShiftedDown &&
-        lastSelectedTile.y == tile.y - 1) ||
-      // Right and offset above.
-      (lastSelectedTile.x == tile.x - 1 &&
-        !lastSelectedTile.isShiftedDown &&
-        lastSelectedTile.y == tile.y + 1) ||
-      // Left.
-      (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.y == tile.y) ||
-      // Left and offset below.
-      (lastSelectedTile.x == tile.x + 1 &&
-        lastSelectedTile.isShiftedDown &&
-        lastSelectedTile.y == tile.y - 1) ||
-      // Left and offset above.
-      (lastSelectedTile.x == tile.x + 1 &&
-        !lastSelectedTile.isShiftedDown &&
-        lastSelectedTile.y == tile.y + 1);
+        // Above.
+        (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y - 1) ||
+        // Below.
+        (lastSelectedTile.x == tile.x && lastSelectedTile.y == tile.y + 1) ||
+        // Right.
+        (lastSelectedTile.x == tile.x - 1 && lastSelectedTile.y == tile.y) ||
+        // Right and offset below.
+        (lastSelectedTile.x == tile.x - 1 && lastSelectedTile.isShiftedDown &&
+         lastSelectedTile.y == tile.y - 1) ||
+        // Right and offset above.
+        (lastSelectedTile.x == tile.x - 1 && !lastSelectedTile.isShiftedDown &&
+         lastSelectedTile.y == tile.y + 1) ||
+        // Left.
+        (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.y == tile.y) ||
+        // Left and offset below.
+        (lastSelectedTile.x == tile.x + 1 && lastSelectedTile.isShiftedDown &&
+         lastSelectedTile.y == tile.y - 1) ||
+        // Left and offset above.
+        (lastSelectedTile.x == tile.x + 1 && !lastSelectedTile.isShiftedDown &&
+         lastSelectedTile.y == tile.y + 1);
     return (
-      touchesLastSelectedTile &&
-      !this._tileArrayContainsTile(selectedTiles, tile)
-    );
+        touchesLastSelectedTile &&
+        !this._tileArrayContainsTile(selectedTiles, tile));
   }
   applyMove(tiles) {
+    console.assert(
+        this._state != TileBoard.State.GAME_OVER,
+        'Board moves shouldn\'t be possible when the game is over.');
+
     // Destroy tiles in the move.
     for (let t = 0; t < tiles.length; t++) {
       const currentTile = tiles[t];
       this._rows[currentTile.y][currentTile.x] = null;
     }
+
+    // If there are still red tiles in the bottom row at this point we should
+    // end the game since the user didn't destroy them before they essentially
+    // "burned" their way through the board.
+    // TODO(wkorman): Also end the game if there are no more valid words.
+    const gameOver =
+        this._rows[BOARD_HEIGHT - 1].find(t => t && t.style == Tile.Style.FIRE);
 
     // Shift down all tiles above the moved tiles.
     for (let t = 0; t < tiles.length; t++) {
@@ -151,16 +146,21 @@ class TileBoard {
       const currentTile = tiles[t];
       for (let y = currentTile.y; y >= 0; y--) {
         if (!this._rows[y][currentTile.x]) {
+          const isFire = Math.random() < this._chanceOfFire;
+          const tileStyle = isFire ? Tile.Style.FIRE : Tile.Style.NORMAL;
           this._rows[y][currentTile.x] = new Tile(
-            y * BOARD_WIDTH + currentTile.x,
-            TileBoard.pickCharWithFrequencies()
-          );
+              y * BOARD_WIDTH + currentTile.x,
+              TileBoard.pickCharWithFrequencies(),
+              tileStyle);
         }
       }
     }
+
+    return gameOver;
   }
   shuffle() {
-    if (this._shuffleAvailableCount <= 0) return false;
+    if (this._shuffleAvailableCount <= 0)
+      return false;
     // Fisher-Yates shuffle per https://bost.ocks.org/mike/shuffle/
     let m = TILE_COUNT;
     while (m) {
@@ -177,15 +177,19 @@ class TileBoard {
     return true;
   }
   get toString() {
-    return this._rows.map(r => r.map(c => c.letter).join('')).join('');
+    return this._rows
+        .map(r => r.map(c => `${c.letter}${c.styleAsNumber}`).join(''))
+        .join('');
   }
   static create() {
-    let boardChars = '';
-    for (let i = 0; i < TILE_COUNT; i++)
-      boardChars += TileBoard.pickCharWithFrequencies();
+    const tiles = [];
+    for (let i = 0; i < TILE_COUNT; i++) {
+      tiles.push(new Tile(i, TileBoard.pickCharWithFrequencies()));
+    }
     return {
-      letters: boardChars,
-      shuffleAvailableCount: DEFAULT_SHUFFLE_AVAILABLE_COUNT
+      letters: tiles.map(t => `${t.letter}${t.styleAsNumber}`).join(''),
+      shuffleAvailableCount: DEFAULT_SHUFFLE_AVAILABLE_COUNT,
+      state: TileBoard.StateToNumber[TileBoard.State.ACTIVE]
     };
   }
   static pickCharWithFrequencies() {
@@ -193,7 +197,8 @@ class TileBoard {
     let accumulator = 0;
     for (let i = 0; i < CHAR_FREQUENCIES.length; i++) {
       accumulator += CHAR_FREQUENCIES[i][1];
-      if (accumulator >= pick) return CHAR_FREQUENCIES[i][0];
+      if (accumulator >= pick)
+        return CHAR_FREQUENCIES[i][0];
     }
     return CHAR_FREQUENCIES[CHAR_FREQUENCIES.length - 1][0];
   }
@@ -205,8 +210,13 @@ class TileBoard {
   }
 }
 
+TileBoard.State =
+    Object.freeze({ACTIVE: Symbol('active'), GAME_OVER: Symbol('game_over')});
+TileBoard.NumberToState = [TileBoard.State.ACTIVE, TileBoard.State.GAME_OVER];
+TileBoard.StateToNumber = {};
+TileBoard.NumberToState.map((state, i) => TileBoard.StateToNumber[state] = i);
+
 TileBoard.info = console.log.bind(
-  console.log,
-  '%cTileBoard',
-  `background: #3de8ea; color: white; padding: 1px 6px 2px 7px; border-radius: 6px;`
-);
+    console.log,
+    '%cTileBoard',
+    `background: #3de8ea; color: white; padding: 1px 6px 2px 7px; border-radius: 6px;`);

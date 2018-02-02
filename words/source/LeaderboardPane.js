@@ -9,7 +9,7 @@
  */
 'use strict';
 
-defineParticle(({ DomParticle }) => {
+defineParticle(({DomParticle}) => {
   const host = `show-leaderboard`;
 
   const styles = `
@@ -62,7 +62,7 @@ defineParticle(({ DomParticle }) => {
     _render(props) {
       if (props.stats && props.person)
         return {
-          // TODO
+            // TODO
         };
     }
   };

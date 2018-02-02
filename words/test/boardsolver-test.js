@@ -11,22 +11,35 @@ describe('BoardSolver', function() {
   describe('#getValidWords()', function() {
     it('should return empty list with no valid words', function() {
       const dictionary = new Dictionary('cat');
-      const board = new TileBoard();
+      let letters = '';
+      for (let i = 0; i < TILE_COUNT; i++)
+        letters += 'Z' + Tile.StyleToNumber[Tile.Style.NORMAL];
+      const board = new TileBoard({letters, shuffleAvailableCount: 0});
       const solver = new BoardSolver(dictionary, board);
       assert.equal(solver.getValidWords().length, 0);
     });
 
+    // TODO(wkorman): Move this to a board test utility class.
+    lettersToBoardString =
+        (letters) => {
+          let lettersWithStyle = '';
+          const normalStyle = Tile.StyleToNumber[Tile.Style.NORMAL];
+          for (let i = 0; i < letters.length; i++)
+            lettersWithStyle += `${letters.charAt(i)}${normalStyle}`;
+          return lettersWithStyle;
+        }
+
     it('should return single word', function() {
       const dictionary = new Dictionary('cat');
       const board = new TileBoard({
-        letters:
-          'ZZZZZZZ' +
-          'ZZZZZZZ' +
-          'ZZZCZZZ' +
-          'ZZZAZZZ' +
-          'ZZZTZZZ' +
-          'ZZZZZZZ' +
-          'ZZZZZZZ',
+        letters: lettersToBoardString(
+            'ZZZZZZZ' +
+            'ZZZZZZZ' +
+            'ZZZCZZZ' +
+            'ZZZAZZZ' +
+            'ZZZTZZZ' +
+            'ZZZZZZZ' +
+            'ZZZZZZZ'),
         shuffleAvailableCount: 0
       });
       const solver = new BoardSolver(dictionary, board);

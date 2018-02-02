@@ -10,17 +10,27 @@ var assert = chai.assert;
 describe('TileBoard', function() {
   const savePickCharWithFrequencies = TileBoard.pickCharWithFrequencies;
 
+  lettersToBoardString =
+      (letters) => {
+        let lettersWithStyle = '';
+        const normalStyle = Tile.StyleToNumber[Tile.Style.NORMAL];
+        for (let i = 0; i < letters.length; i++)
+          lettersWithStyle += `${letters.charAt(i)}${normalStyle}`;
+        return lettersWithStyle;
+      }
+
   function createDefaultBoard(shuffleCount) {
-    if (shuffleCount == undefined) shuffleCount = 1;
-    return new TileBoard({
-      letters:
-        'ABCDEFG' +
+    if (shuffleCount == undefined)
+      shuffleCount = 1;
+    const letters = 'ABCDEFG' +
         'HIJKLMN' +
         'OPQRSTU' +
         'VWXYZAB' +
         'CDEFGHI' +
         'JKLMNOP' +
-        'QRSTUVW',
+        'QRSTUVW';
+    return new TileBoard({
+      letters: lettersToBoardString(letters),
       shuffleAvailableCount: shuffleCount
     });
   }
@@ -78,20 +88,21 @@ describe('TileBoard', function() {
       TileBoard.pickCharWithFrequencies = savePickCharWithFrequencies;
     });
 
-    it('should destroy tiles at top left corner of board correctly', function() {
-      const board = createDefaultBoard();
-      const tiles = [new Tile(0, 'A'), new Tile(1, 'B'), new Tile(2, 'C')];
-      board.applyMove(tiles);
-      const expectedBoard =
-        '===DEFG' +
-        'HIJKLMN' +
-        'OPQRSTU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP' +
-        'QRSTUVW';
-      assert.equal(board.toString, expectedBoard);
-    });
+    it('should destroy tiles at top left corner of board correctly',
+       function() {
+         const board = createDefaultBoard();
+         const tiles = [new Tile(0, 'A'), new Tile(1, 'B'), new Tile(2, 'C')];
+         board.applyMove(tiles);
+         const expectedBoard = lettersToBoardString(
+             '===DEFG' +
+             'HIJKLMN' +
+             'OPQRSTU' +
+             'VWXYZAB' +
+             'CDEFGHI' +
+             'JKLMNOP' +
+             'QRSTUVW');
+         assert.equal(board.toString, expectedBoard);
+       });
 
     it('should destroy all tiles at top of board correctly', function() {
       const board = createDefaultBoard();
@@ -105,14 +116,14 @@ describe('TileBoard', function() {
         new Tile(6, 'G')
       ];
       board.applyMove(tiles);
-      const expectedBoard =
-        '=======' +
-        'HIJKLMN' +
-        'OPQRSTU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP' +
-        'QRSTUVW';
+      const expectedBoard = lettersToBoardString(
+          '=======' +
+          'HIJKLMN' +
+          'OPQRSTU' +
+          'VWXYZAB' +
+          'CDEFGHI' +
+          'JKLMNOP' +
+          'QRSTUVW');
       assert.equal(board.toString, expectedBoard);
     });
 
@@ -120,14 +131,14 @@ describe('TileBoard', function() {
       const board = createDefaultBoard();
       const tiles = [new Tile(16, 'Q'), new Tile(17, 'R'), new Tile(18, 'S')];
       board.applyMove(tiles);
-      const expectedBoard =
-        'AB===FG' +
-        'HICDEMN' +
-        'OPJKLTU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP' +
-        'QRSTUVW';
+      const expectedBoard = lettersToBoardString(
+          'AB===FG' +
+          'HICDEMN' +
+          'OPJKLTU' +
+          'VWXYZAB' +
+          'CDEFGHI' +
+          'JKLMNOP' +
+          'QRSTUVW');
       assert.equal(board.toString, expectedBoard);
     });
 
@@ -140,76 +151,80 @@ describe('TileBoard', function() {
         new Tile(11, 'L')
       ];
       board.applyMove(tiles);
-      const expectedBoard =
-        'AB===FG' +
-        'HICD=MN' +
-        'OPJKETU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP' +
-        'QRSTUVW';
+      const expectedBoard = lettersToBoardString(
+          'AB===FG' +
+          'HICD=MN' +
+          'OPJKETU' +
+          'VWXYZAB' +
+          'CDEFGHI' +
+          'JKLMNOP' +
+          'QRSTUVW');
       assert.equal(board.toString, expectedBoard);
     });
 
-    it('should destroy tiles mid-board multi-row and looping back correctly', function() {
-      const board = createDefaultBoard();
-      const tiles = [
-        new Tile(16, 'Q'),
-        new Tile(17, 'R'),
-        new Tile(18, 'S'),
-        new Tile(11, 'L'),
-        new Tile(10, 'K'),
-        new Tile(9, 'J')
-      ];
-      board.applyMove(tiles);
-      const expectedBoard =
-        'AB===FG' +
-        'HI===MN' +
-        'OPCDETU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP' +
-        'QRSTUVW';
-      assert.equal(board.toString, expectedBoard);
-    });
+    it('should destroy tiles mid-board multi-row and looping back correctly',
+       function() {
+         const board = createDefaultBoard();
+         const tiles = [
+           new Tile(16, 'Q'),
+           new Tile(17, 'R'),
+           new Tile(18, 'S'),
+           new Tile(11, 'L'),
+           new Tile(10, 'K'),
+           new Tile(9, 'J')
+         ];
+         board.applyMove(tiles);
+         const expectedBoard = lettersToBoardString(
+             'AB===FG' +
+             'HI===MN' +
+             'OPCDETU' +
+             'VWXYZAB' +
+             'CDEFGHI' +
+             'JKLMNOP' +
+             'QRSTUVW');
+         assert.equal(board.toString, expectedBoard);
+       });
 
-    it('should destroy tiles mid-board multi-row-interspersed and looping back correctly', function() {
-      const board = createDefaultBoard();
-      const tiles = [
-        new Tile(16, 'Q'),
-        new Tile(17, 'R'),
-        new Tile(18, 'S'),
-        new Tile(11, 'L'),
-        new Tile(4, 'E'),
-        new Tile(3, 'D'),
-        new Tile(2, 'C')
-      ];
-      board.applyMove(tiles);
-      const expectedBoard =
-        'AB===FG' +
-        'HI===MN' +
-        'OPJK=TU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP' +
-        'QRSTUVW';
-      assert.equal(board.toString, expectedBoard);
-    });
+    it('should destroy tiles mid-board multi-row-interspersed and looping back correctly',
+       function() {
+         const board = createDefaultBoard();
+         const tiles = [
+           new Tile(16, 'Q'),
+           new Tile(17, 'R'),
+           new Tile(18, 'S'),
+           new Tile(11, 'L'),
+           new Tile(4, 'E'),
+           new Tile(3, 'D'),
+           new Tile(2, 'C')
+         ];
+         board.applyMove(tiles);
+         const expectedBoard = lettersToBoardString(
+             'AB===FG' +
+             'HI===MN' +
+             'OPJK=TU' +
+             'VWXYZAB' +
+             'CDEFGHI' +
+             'JKLMNOP' +
+             'QRSTUVW');
+         assert.equal(board.toString, expectedBoard);
+       });
 
-    it('should destroy tiles at bottom right corner of board correctly', function() {
-      const board = createDefaultBoard();
-      const tiles = [new Tile(46, 'U'), new Tile(47, 'V'), new Tile(48, 'W')];
-      board.applyMove(tiles);
-      const expectedBoard =
-        'ABCD===' +
-        'HIJKEFG' +
-        'OPQRLMN' +
-        'VWXYSTU' +
-        'CDEFZAB' +
-        'JKLMGHI' +
-        'QRSTNOP';
-      assert.equal(board.toString, expectedBoard);
-    });
+    it('should destroy tiles at bottom right corner of board correctly',
+       function() {
+         const board = createDefaultBoard();
+         const tiles =
+             [new Tile(46, 'U'), new Tile(47, 'V'), new Tile(48, 'W')];
+         board.applyMove(tiles);
+         const expectedBoard = lettersToBoardString(
+             'ABCD===' +
+             'HIJKEFG' +
+             'OPQRLMN' +
+             'VWXYSTU' +
+             'CDEFZAB' +
+             'JKLMGHI' +
+             'QRSTNOP');
+         assert.equal(board.toString, expectedBoard);
+       });
 
     it('should destroy all tiles at bottom of board correctly', function() {
       const board = createDefaultBoard();
@@ -223,14 +238,14 @@ describe('TileBoard', function() {
         new Tile(48, 'W')
       ];
       board.applyMove(tiles);
-      const expectedBoard =
-        '=======' +
-        'ABCDEFG' +
-        'HIJKLMN' +
-        'OPQRSTU' +
-        'VWXYZAB' +
-        'CDEFGHI' +
-        'JKLMNOP';
+      const expectedBoard = lettersToBoardString(
+          '=======' +
+          'ABCDEFG' +
+          'HIJKLMN' +
+          'OPQRSTU' +
+          'VWXYZAB' +
+          'CDEFGHI' +
+          'JKLMNOP');
       assert.equal(board.toString, expectedBoard);
     });
   });
@@ -283,12 +298,13 @@ describe('TileBoard', function() {
   describe('#toString', function() {
     it('should concatenate all tiles into a single string', function() {
       const board = new TileBoard({
-        letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW'
+        letters: lettersToBoardString(
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW')
       });
       assert.equal(
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW',
-        board.toString
-      );
+          lettersToBoardString(
+              'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW'),
+          board.toString);
     });
   });
 
@@ -304,106 +320,114 @@ describe('TileBoard', function() {
       assert.isTrue(board.isMoveValid([tile], tile));
     });
 
-    it('should allow selecting any touching tile from top left corner', function() {
-      const board = createDefaultBoard();
-      const tile = new Tile(0, 'A');
-      // Right.
-      assert.isTrue(board.isMoveValid([tile], new Tile(1, 'B')));
-      // Right and offset below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(8, 'I')));
-      // Below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(7, 'H')));
+    it('should allow selecting any touching tile from top left corner',
+       function() {
+         const board = createDefaultBoard();
+         const tile = new Tile(0, 'A');
+         // Right.
+         assert.isTrue(board.isMoveValid([tile], new Tile(1, 'B')));
+         // Right and offset below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(8, 'I')));
+         // Below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(7, 'H')));
 
-      assert.isFalse(board.isMoveValid([tile], new Tile(2, 'C')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(6, 'G')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(9, 'J')));
-    });
+         assert.isFalse(board.isMoveValid([tile], new Tile(2, 'C')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(6, 'G')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(9, 'J')));
+       });
 
-    it('should allow selecting any touching tile from top right corner', function() {
-      const board = createDefaultBoard();
-      const tile = new Tile(6, 'G');
-      // Left.
-      assert.isTrue(board.isMoveValid([tile], new Tile(5, 'F')));
-      // Left and offset below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(12, 'M')));
-      // Below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(13, 'N')));
+    it('should allow selecting any touching tile from top right corner',
+       function() {
+         const board = createDefaultBoard();
+         const tile = new Tile(6, 'G');
+         // Left.
+         assert.isTrue(board.isMoveValid([tile], new Tile(5, 'F')));
+         // Left and offset below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(12, 'M')));
+         // Below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(13, 'N')));
 
-      assert.isFalse(board.isMoveValid([tile], new Tile(4, 'E')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(7, 'H')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(11, 'L')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(14, 'O')));
-    });
+         assert.isFalse(board.isMoveValid([tile], new Tile(4, 'E')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(7, 'H')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(11, 'L')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(14, 'O')));
+       });
 
-    it('should allow selecting any touching tile from bottom right corner', function() {
-      const board = createDefaultBoard();
-      const tile = new Tile(48, 'W');
-      // Above.
-      assert.isTrue(board.isMoveValid([tile], new Tile(41, 'P')));
-      // Left.
-      assert.isTrue(board.isMoveValid([tile], new Tile(47, 'V')));
+    it('should allow selecting any touching tile from bottom right corner',
+       function() {
+         const board = createDefaultBoard();
+         const tile = new Tile(48, 'W');
+         // Above.
+         assert.isTrue(board.isMoveValid([tile], new Tile(41, 'P')));
+         // Left.
+         assert.isTrue(board.isMoveValid([tile], new Tile(47, 'V')));
 
-      assert.isFalse(board.isMoveValid([tile], new Tile(40, 'O')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(46, 'U')));
-    });
+         assert.isFalse(board.isMoveValid([tile], new Tile(40, 'O')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(46, 'U')));
+       });
 
-    it('should allow selecting any touching tile from bottom left corner', function() {
-      const board = createDefaultBoard();
-      const tile = new Tile(42, 'Q');
-      // Above.
-      assert.isTrue(board.isMoveValid([tile], new Tile(35, 'J')));
-      // Right.
-      assert.isTrue(board.isMoveValid([tile], new Tile(43, 'R')));
+    it('should allow selecting any touching tile from bottom left corner',
+       function() {
+         const board = createDefaultBoard();
+         const tile = new Tile(42, 'Q');
+         // Above.
+         assert.isTrue(board.isMoveValid([tile], new Tile(35, 'J')));
+         // Right.
+         assert.isTrue(board.isMoveValid([tile], new Tile(43, 'R')));
 
-      assert.isFalse(board.isMoveValid([tile], new Tile(34, 'I')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(36, 'K')));
-      assert.isFalse(board.isMoveValid([tile], new Tile(44, 'S')));
-    });
+         assert.isFalse(board.isMoveValid([tile], new Tile(34, 'I')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(36, 'K')));
+         assert.isFalse(board.isMoveValid([tile], new Tile(44, 'S')));
+       });
 
-    it('should allow selecting any touching tile from an unshifted column in center region', function() {
-      const board = createDefaultBoard();
-      const tile = new Tile(22, 'Y');
-      assert.isFalse(tile.isShiftedDown);
-      // Above.
-      assert.isTrue(board.isMoveValid([tile], new Tile(15, 'R')));
-      // Below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(29, 'F')));
-      // Right.
-      assert.isTrue(board.isMoveValid([tile], new Tile(23, 'Z')));
-      // Right and offset above.
-      assert.isTrue(board.isMoveValid([tile], new Tile(16, 'S')));
-      // Left.
-      assert.isTrue(board.isMoveValid([tile], new Tile(21, 'X')));
-      // Left and offset above.
-      assert.isTrue(board.isMoveValid([tile], new Tile(14, 'Q')));
+    it('should allow selecting any touching tile from an unshifted column in center region',
+       function() {
+         const board = createDefaultBoard();
+         const tile = new Tile(22, 'Y');
+         assert.isFalse(tile.isShiftedDown);
+         // Above.
+         assert.isTrue(board.isMoveValid([tile], new Tile(15, 'R')));
+         // Below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(29, 'F')));
+         // Right.
+         assert.isTrue(board.isMoveValid([tile], new Tile(23, 'Z')));
+         // Right and offset above.
+         assert.isTrue(board.isMoveValid([tile], new Tile(16, 'S')));
+         // Left.
+         assert.isTrue(board.isMoveValid([tile], new Tile(21, 'X')));
+         // Left and offset above.
+         assert.isTrue(board.isMoveValid([tile], new Tile(14, 'Q')));
 
-      // Right and offset below.
-      assert.isFalse(board.isMoveValid([tile], new Tile(30, 'G')));
-      // Left and offset below.
-      assert.isFalse(board.isMoveValid([tile], new Tile(28, 'E')));
-    });
+         // Right and offset below.
+         assert.isFalse(board.isMoveValid([tile], new Tile(30, 'G')));
+         // Left and offset below.
+         assert.isFalse(board.isMoveValid([tile], new Tile(28, 'E')));
+       });
 
-    it('should allow selecting any touching tile from a shifted column in center region', function() {
-      const board = createDefaultBoard();
-      const tile = new Tile(23, 'Z');
-      assert.isTrue(tile.isShiftedDown);
-      // Above.
-      assert.isTrue(board.isMoveValid([tile], new Tile(16, 'S')));
-      // Below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(30, 'G')));
-      // Right.
-      assert.isTrue(board.isMoveValid([tile], new Tile(24, 'A')));
-      // Right and offset below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(31, 'H')));
-      // Left.
-      assert.isTrue(board.isMoveValid([tile], new Tile(22, 'Y')));
-      // Left and offset below.
-      assert.isTrue(board.isMoveValid([tile], new Tile(29, 'F')));
+    it('should allow selecting any touching tile from a shifted column in center region',
+       function() {
+         const board = createDefaultBoard();
+         const tile = new Tile(23, 'Z');
+         assert.isTrue(tile.isShiftedDown);
+         // Above.
+         assert.isTrue(board.isMoveValid([tile], new Tile(16, 'S')));
+         // Below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(30, 'G')));
+         // Right.
+         assert.isTrue(board.isMoveValid([tile], new Tile(24, 'A')));
+         // Right and offset below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(31, 'H')));
+         // Left.
+         assert.isTrue(board.isMoveValid([tile], new Tile(22, 'Y')));
+         // Left and offset below.
+         assert.isTrue(board.isMoveValid([tile], new Tile(29, 'F')));
 
-      // Right and offset above.
-      assert.isFalse(board.isMoveValid([tile], new Tile(17, 'T')));
-      // Left and offset above.
-      assert.isFalse(board.isMoveValid([tile], new Tile(15, 'R')));
-    });
+         // Right and offset above.
+         assert.isFalse(board.isMoveValid([tile], new Tile(17, 'T')));
+         // Left and offset above.
+         assert.isFalse(board.isMoveValid([tile], new Tile(15, 'R')));
+       });
   });
+
+  // TODO(wkorman): Add tests for game-end on burning tiles.
 });

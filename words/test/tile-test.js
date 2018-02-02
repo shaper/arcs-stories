@@ -31,17 +31,20 @@ describe('Tile', function() {
   });
 
   describe('#isShiftedDown', function() {
-    it('should report alternating tile columns from zero on as shifted down', function() {
-      assert.isTrue(new Tile(0, 'A').isShiftedDown);
-      assert.isFalse(new Tile(1, 'B').isShiftedDown);
-      assert.isTrue(new Tile(2, 'C').isShiftedDown);
-    });
+    it('should report alternating tile columns from zero on as shifted down',
+       function() {
+         assert.isTrue(new Tile(0, 'A').isShiftedDown);
+         assert.isFalse(new Tile(1, 'B').isShiftedDown);
+         assert.isTrue(new Tile(2, 'C').isShiftedDown);
+       });
   });
 
   describe('#toString', function() {
     it('should include all member data', function() {
       const tile = new Tile(0, 'A');
-      assert.equal('[charIndex=0, letter=A, x=0, y=0]', tile.toString);
+      assert.equal(
+          '[charIndex=0, letter=A, style=Symbol(normal), x=0, y=0]',
+          tile.toString);
     });
   });
 });

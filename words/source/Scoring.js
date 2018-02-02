@@ -62,19 +62,19 @@ class Scoring {
   }
   static wordScore(tiles) {
     return (
-      Scoring._wordLengthMultiplier(tiles.length) *
-      tiles.reduce((accumulator, t) => accumulator + CHAR_SCORE[t.letter], 0)
-    );
+        Scoring._wordLengthMultiplier(tiles.length) *
+        tiles.reduce(
+            (accumulator, t) => accumulator + CHAR_SCORE[t.letter], 0));
   }
   static longestWordText(stats) {
-    return stats && stats.longestWord
-      ? `${stats.longestWord} (${stats.longestWordScore})`
-      : '(none yet)';
+    return stats && stats.longestWord ?
+        `${stats.longestWord} (${stats.longestWordScore})` :
+        '(none yet)';
   }
   static highestScoringWordText(stats) {
-    return stats && stats.highestScoringWord
-      ? `${stats.highestScoringWord} (${stats.highestScoringWordScore})`
-      : '(none yet)';
+    return stats && stats.highestScoringWord ?
+        `${stats.highestScoringWord} (${stats.highestScoringWordScore})` :
+        '(none yet)';
   }
   static applyMoveStats(stats, word, score) {
     let updatedValues = {
@@ -102,6 +102,6 @@ class Scoring {
     return updatedValues;
   }
   static create() {
-    return { score: 0, moveCount: 0, startstamp: Date.now() };
+    return {score: 0, moveCount: 0, startstamp: Date.now()};
   }
 }
