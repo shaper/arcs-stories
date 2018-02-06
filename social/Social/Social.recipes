@@ -1,15 +1,15 @@
-# @license
-# Copyright (c) 2017 Google Inc. All rights reserved.
-# This code may only be used under the BSD style license found at
-# http://polymer.github.io/LICENSE.txt
-# Code distributed by Google as part of this project is also
-# subject to an additional IP rights grant found at
-# http://polymer.github.io/PATENTS.txt
+// @license
+// Copyright (c) 2017 Google Inc. All rights reserved.
+// This code may only be used under the BSD style license found at
+// http://polymer.github.io/LICENSE.txt
+// Code distributed by Google as part of this project is also
+// subject to an additional IP rights grant found at
+// http://polymer.github.io/PATENTS.txt
 
 import 'Particles.manifest'
 
-# Allows creating multiple posts by the author and viewing all posts created
-# in this Arc.
+// Allows creating multiple posts by the author and viewing all posts created
+// in this Arc.
 recipe
   create #posts as posts
   use #user as user
@@ -22,10 +22,10 @@ recipe
     user <- user
     people <- people
 
-# A feed that aggregates everything a user and friends say.
+// A feed that aggregates everything a user and friends say.
 recipe
-  # Right now, only set handles from friends are collated together ==> my posts
-  # will not appear on the feed.
+  // Right now, only set handles from friends are collated together ==> my posts
+  // will not appear on the feed.
   map #friends_posts as posts
   use #user as user
   use #identities as people
