@@ -1,26 +1,26 @@
-# @license
-# Copyright (c) 2017 Google Inc. All rights reserved.
-# This code may only be used under the BSD style license found at
-# http://polymer.github.io/LICENSE.txt
-# Code distributed by Google as part of this project is also
-# subject to an additional IP rights grant found at
-# http://polymer.github.io/PATENTS.txt
+// @license
+// Copyright (c) 2017 Google Inc. All rights reserved.
+// This code may only be used under the BSD style license found at
+// http://polymer.github.io/LICENSE.txt
+// Code distributed by Google as part of this project is also
+// subject to an additional IP rights grant found at
+// http://polymer.github.io/PATENTS.txt
 
 schema Stats
   normative
-    # Current or ending (if over) game score.
+    // Current or ending (if over) game score.
     Number score
-    # Total number of moves made in game thus far (or total, if over).
+    // Total number of moves made in game thus far (or total, if over).
     Number moveCount
-    # Timestamp at which the game was first created.
+    // Timestamp at which the game was first created.
     Number startstamp
-    # Timestamp at which the game ended or undefined if not yet over.
+    // Timestamp at which the game ended or undefined if not yet over.
     Number endstamp
-    # Longest word (text)
+    // Longest word (text)
     Text longestWord
-    # Longest word (score)
+    // Longest word (score)
     Number longestWordScore
-    # Highest scoring word (text)
+    // Highest scoring word (text)
     Text highestScoringWord
-    # Highest scoring word (score)
+    // Highest scoring word (score)
     Number highestScoringWordScore
