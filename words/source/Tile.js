@@ -39,7 +39,7 @@ class Tile {
   get styleAsNumber() {
     return Tile.StyleToNumber[this.style];
   }
-  get toString() {
+  toString() {
     return `[charIndex=${this.charIndex}, letter=${this.letter}, style=${
         this.style.toString()}, x=${this.x}, y=${this.y}]`;
   }

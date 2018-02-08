@@ -44,7 +44,7 @@ describe('Tile', function() {
       const tile = new Tile(0, 'A');
       assert.equal(
           '[charIndex=0, letter=A, style=Symbol(normal), x=0, y=0]',
-          tile.toString);
+          tile.toString());
     });
   });
 });

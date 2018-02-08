@@ -232,7 +232,7 @@ defineParticle(({DomParticle, resolver}) => {
         if (gameOver) info('Ending game.');
         this._setStats(Scoring.applyMoveStats(props.stats, word, score));
         this._setBoard({
-          letters: tileBoard.toString,
+          letters: tileBoard.toString(),
           shuffleAvailableCount: tileBoard.shuffleAvailableCount,
           state: TileBoard.StateToNumber[gameOver ? TileBoard.State.GAME_OVER : TileBoard.State.ACTIVE]
         });
@@ -374,8 +374,8 @@ defineParticle(({DomParticle, resolver}) => {
           undefined :
           state.selectedTiles[state.selectedTiles.length - 1];
       // info(
-      //   `_selectTile [tile=${tile.toString}, lastSelectedTile=${
-      //     lastSelectedTile ? lastSelectedTile.toString : 'undefined'
+      //   `_selectTile [tile=${tile}, lastSelectedTile=${
+      //     lastSelectedTile ? lastSelectedTile : 'undefined'
       //   }].`
       // );
       if (!state.tileBoard.isMoveValid(state.selectedTiles, tile))
@@ -417,7 +417,7 @@ defineParticle(({DomParticle, resolver}) => {
       info(`Shuffling [remaining=${state.tileBoard.shuffleAvailableCount}].`);
       if (state.tileBoard.shuffle()) {
         this._setBoard({
-          letters: state.tileBoard.toString,
+          letters: state.tileBoard.toString(),
           shuffleAvailableCount: state.tileBoard.shuffleAvailableCount
         });
       }
