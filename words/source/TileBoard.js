@@ -24,7 +24,7 @@ const BOARD_WIDTH = 7;
 const TILE_COUNT = BOARD_WIDTH * BOARD_HEIGHT;
 const DEFAULT_SHUFFLE_AVAILABLE_COUNT = 3;
 // TODO(wkorman): Fire chance should probably vary by level.
-const CHANCE_OF_FIRE_ON_REFILL = 0.05;
+const CHANCE_OF_FIRE_ON_REFILL = 0.1;
 
 class TileBoard {
   constructor(board) {
@@ -146,7 +146,9 @@ class TileBoard {
       const currentTile = tiles[t];
       for (let y = currentTile.y; y >= 0; y--) {
         if (!this._rows[y][currentTile.x]) {
-          const isFire = Math.random() < this._chanceOfFire;
+          const rnd = Math.random();
+          const isFire = rnd < this._chanceOfFire;
+          // TileBoard.info(`Generating tile [rnd=${rnd}, chanceOfFire=${this._chanceOfFire}, isFire=${isFire}].`);
           const tileStyle = isFire ? Tile.Style.FIRE : Tile.Style.NORMAL;
           this._rows[y][currentTile.x] = new Tile(
               y * BOARD_WIDTH + currentTile.x,
