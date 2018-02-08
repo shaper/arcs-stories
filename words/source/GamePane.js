@@ -253,7 +253,7 @@ defineParticle(({DomParticle, resolver}) => {
       if (!props.stats)
         this._setStats(Scoring.create());
       const tileBoard = new TileBoard(propsBoard);
-      propsBoard.chanceOfFireOnRefill = TileBoard.CHANCE_OF_FIRE_ON_REFILL;
+      tileBoard.chanceOfFireOnRefill = CHANCE_OF_FIRE_ON_REFILL;
       let [moveData, moveTiles, moveScore] =
           this._processSubmittedMove(props, state, tileBoard);
       this._setState({
