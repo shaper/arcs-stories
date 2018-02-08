@@ -101,7 +101,7 @@ describe('TileBoard', function() {
              'CDEFGHI' +
              'JKLMNOP' +
              'QRSTUVW');
-         assert.equal(board.toString, expectedBoard);
+         assert.equal(board.toString(), expectedBoard);
        });
 
     it('should destroy all tiles at top of board correctly', function() {
@@ -124,7 +124,7 @@ describe('TileBoard', function() {
           'CDEFGHI' +
           'JKLMNOP' +
           'QRSTUVW');
-      assert.equal(board.toString, expectedBoard);
+      assert.equal(board.toString(), expectedBoard);
     });
 
     it('should destroy tiles mid-board correctly', function() {
@@ -139,7 +139,7 @@ describe('TileBoard', function() {
           'CDEFGHI' +
           'JKLMNOP' +
           'QRSTUVW');
-      assert.equal(board.toString, expectedBoard);
+      assert.equal(board.toString(), expectedBoard);
     });
 
     it('should destroy tiles mid-board multi-row correctly', function() {
@@ -159,7 +159,7 @@ describe('TileBoard', function() {
           'CDEFGHI' +
           'JKLMNOP' +
           'QRSTUVW');
-      assert.equal(board.toString, expectedBoard);
+      assert.equal(board.toString(), expectedBoard);
     });
 
     it('should destroy tiles mid-board multi-row and looping back correctly',
@@ -182,7 +182,7 @@ describe('TileBoard', function() {
              'CDEFGHI' +
              'JKLMNOP' +
              'QRSTUVW');
-         assert.equal(board.toString, expectedBoard);
+         assert.equal(board.toString(), expectedBoard);
        });
 
     it('should destroy tiles mid-board multi-row-interspersed and looping back correctly',
@@ -206,7 +206,7 @@ describe('TileBoard', function() {
              'CDEFGHI' +
              'JKLMNOP' +
              'QRSTUVW');
-         assert.equal(board.toString, expectedBoard);
+         assert.equal(board.toString(), expectedBoard);
        });
 
     it('should destroy tiles at bottom right corner of board correctly',
@@ -223,7 +223,7 @@ describe('TileBoard', function() {
              'CDEFZAB' +
              'JKLMGHI' +
              'QRSTNOP');
-         assert.equal(board.toString, expectedBoard);
+         assert.equal(board.toString(), expectedBoard);
        });
 
     it('should destroy all tiles at bottom of board correctly', function() {
@@ -246,7 +246,7 @@ describe('TileBoard', function() {
           'VWXYZAB' +
           'CDEFGHI' +
           'JKLMNOP');
-      assert.equal(board.toString, expectedBoard);
+      assert.equal(board.toString(), expectedBoard);
     });
   });
 
@@ -279,18 +279,18 @@ describe('TileBoard', function() {
   describe('#shuffle()', function() {
     it('should not shuffle board with no shuffles remaining', function() {
       let board = createDefaultBoard(0);
-      let letters = board.toString;
+      let letters = board.toString();
       assert.equal(board.shuffleAvailableCount, 0);
       assert.isFalse(board.shuffle());
-      assert.equal(letters, board.toString);
+      assert.equal(letters, board.toString());
     });
 
     it('should shuffle board with a shuffle remaining', function() {
       let board = createDefaultBoard(1);
-      let letters = board.toString;
+      let letters = board.toString();
       assert.equal(board.shuffleAvailableCount, 1);
       assert.isTrue(board.shuffle());
-      assert.notEqual(letters, board.toString);
+      assert.notEqual(letters, board.toString());
       assert.equal(board.shuffleAvailableCount, 0);
     });
   });
@@ -304,7 +304,7 @@ describe('TileBoard', function() {
       assert.equal(
           lettersToBoardString(
               'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW'),
-          board.toString);
+          board.toString());
     });
   });
 
@@ -429,5 +429,6 @@ describe('TileBoard', function() {
        });
   });
 
-  // TODO(wkorman): Add tests for game-end on burning tiles.
+  // TODO(wkorman): Add tests for game-end on burning tiles, and
+  // burning tile behavior on move application when not at bottom.
 });

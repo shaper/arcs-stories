@@ -116,18 +116,44 @@ class TileBoard {
       this._rows[currentTile.y][currentTile.x] = null;
     }
 
-    // If there are still red tiles in the bottom row at this point we should
-    // end the game since the user didn't destroy them before they essentially
-    // "burned" their way through the board.
-    // TODO(wkorman): Also end the game if there are no more valid words.
-    const gameOver =
-        this._rows[BOARD_HEIGHT - 1].find(t => t && t.style == Tile.Style.FIRE);
+    // Destroy one tile beneath each remaining fire tile and end the game if
+    // there's at least one already sitting at the bottom.
+    let tilesForCompression = tiles.slice();
+    let gameOver = false;
+    for (let y = 0; y < BOARD_HEIGHT; y++) {
+      for (let x = 0; x < BOARD_WIDTH; x++) {
+        const currentTile = this.tileAt(x, y);
+        // TileBoard.info(`Considering tile for fire [tile=${currentTile}].`);
+        if (currentTile && currentTile.style == Tile.Style.FIRE) {
+          // End the game if this is a fire tile already at the bottom.
+          if (y == BOARD_HEIGHT - 1) {
+            gameOver = true;
+          } else {
+            // Destroy the tile beneath this fire tile.
+            TileBoard.info(`Trying to destroy tile beneath fire [tile=${currentTile}, x=${x}, y=${y + 1}].`);
+            const tileToDestroy = this.tileAt(x, y + 1);
+            if (tileToDestroy) {
+               if (tileToDestroy.style != Tile.Style.FIRE) {
+                tilesForCompression.push(tileToDestroy);
+                this._rows[y + 1][x] = null;
+              } else {
+                TileBoard.info(`Not destroying tile that's itself a fire tile [target=${tileToDestroy}].`);
+              }
+            } else {
+              TileBoard.info(`Not destroying tile that's already destroyed [tile=${currentTile}, x=${x}, y=${y + 1}].`);
+            }
+          }
+        }
+      }
+    }
 
-    // Shift down all tiles above the moved tiles.
-    for (let t = 0; t < tiles.length; t++) {
+    // TODO(wkorman): Also end the game if there are no more valid words.
+
+    // Shift down all tiles above the destroyed tiles.
+    for (let t = 0; t < tilesForCompression.length; t++) {
       // Keep track of the next spot to fill so that we can correctly
       // collapse potentially multiple empty spaces above the destroyed tile.
-      const currentTile = tiles[t];
+      const currentTile = tilesForCompression[t];
       let nextPlaceY = currentTile.y;
       let y = currentTile.y - 1;
       while (y >= 0) {
@@ -142,8 +168,8 @@ class TileBoard {
     }
 
     // Generate new tiles for the empty spaces that remain.
-    for (let t = 0; t < tiles.length; t++) {
-      const currentTile = tiles[t];
+    for (let t = 0; t < tilesForCompression.length; t++) {
+      const currentTile = tilesForCompression[t];
       for (let y = currentTile.y; y >= 0; y--) {
         if (!this._rows[y][currentTile.x]) {
           const rnd = Math.random();
@@ -178,7 +204,7 @@ class TileBoard {
     this._shuffleAvailableCount--;
     return true;
   }
-  get toString() {
+  toString() {
     return this._rows
         .map(r => r.map(c => `${c.letter}${c.styleAsNumber}`).join(''))
         .join('');
