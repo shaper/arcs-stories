@@ -365,7 +365,7 @@ defineParticle(({DomParticle, resolver}) => {
       };
     }
     _onKeyPress(e, state) {
-      this._setState({debugMode:true});
+      this._setState({debugMode: true});
     }
     _onTileMouseDown(e, state) {
       state.lastTileMoused = e.data.value;

@@ -51,7 +51,9 @@ class TileBoard {
       }
     }
   }
-  set chanceOfFireOnRefill(value) { this._chanceOfFire = value; }
+  set chanceOfFireOnRefill(value) {
+    this._chanceOfFire = value;
+  }
   get shuffleAvailableCount() {
     return this._shuffleAvailableCount;
   }
@@ -130,17 +132,22 @@ class TileBoard {
             gameOver = true;
           } else {
             // Destroy the tile beneath this fire tile.
-            TileBoard.info(`Trying to destroy tile beneath fire [tile=${currentTile}, x=${x}, y=${y + 1}].`);
+            TileBoard.info(`Trying to destroy tile beneath fire [tile=${
+                currentTile}, x=${x}, y=${y + 1}].`);
             const tileToDestroy = this.tileAt(x, y + 1);
             if (tileToDestroy) {
-               if (tileToDestroy.style != Tile.Style.FIRE) {
+              if (tileToDestroy.style != Tile.Style.FIRE) {
                 tilesForCompression.push(tileToDestroy);
                 this._rows[y + 1][x] = null;
               } else {
-                TileBoard.info(`Not destroying tile that's itself a fire tile [target=${tileToDestroy}].`);
+                TileBoard.info(
+                    `Not destroying tile that's itself a fire tile [target=${
+                        tileToDestroy}].`);
               }
             } else {
-              TileBoard.info(`Not destroying tile that's already destroyed [tile=${currentTile}, x=${x}, y=${y + 1}].`);
+              TileBoard.info(
+                  `Not destroying tile that's already destroyed [tile=${
+                      currentTile}, x=${x}, y=${y + 1}].`);
             }
           }
         }
