@@ -18,6 +18,9 @@ class WordEntry {
   get lastTile() {
     return this.tiles.length == 0 ? null : this.tiles[this.tiles.length - 1];
   }
+  toString() {
+    return `text=${this.text}, tiles=${this.tiles}`;
+  }
 }
 
 // Allows analyzing a board to obtain all known valid words.
@@ -77,19 +80,19 @@ class BoardSolver {
     this._walkTileRecursive(x, y + 1, word, validWords, touched);
     // Left.
     this._walkTileRecursive(x - 1, y, word, validWords, touched);
-    // Left and offset below.
-    if (currentTile.isShiftedDown)
-      this._walkTileRecursive(x - 1, y - 1, word, validWords, touched);
     // Left and offset above.
     if (!currentTile.isShiftedDown)
+      this._walkTileRecursive(x - 1, y - 1, word, validWords, touched);
+    // Left and offset below.
+    if (currentTile.isShiftedDown)
       this._walkTileRecursive(x - 1, y + 1, word, validWords, touched);
     // Right.
     this._walkTileRecursive(x + 1, y, word, validWords, touched);
     // Right and offset below.
     if (currentTile.isShiftedDown)
-      this._walkTileRecursive(x + 1, y - 1, word, validWords, touched);
+      this._walkTileRecursive(x + 1, y + 1, word, validWords, touched);
     // Right and offset above.
     if (!currentTile.isShiftedDown)
-      this._walkTileRecursive(x + 1, y + 1, word, validWords, touched);
+      this._walkTileRecursive(x + 1, y - 1, word, validWords, touched);
   }
 }
