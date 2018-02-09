@@ -48,4 +48,6 @@ describe('BoardSolver', function() {
       assert.equal(validWords[0].text, 'CAT');
     });
   });
+
+  // TODO(wkorman): Add robust set of solver tests.
 });

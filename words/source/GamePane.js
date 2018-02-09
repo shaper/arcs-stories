@@ -13,6 +13,7 @@ defineParticle(({DomParticle, resolver}) => {
   function importLibrary(filename) {
     importScripts(resolver(`GamePane/${filename}`));
   }
+  importLibrary('BoardSolver.js');
   importLibrary('Dictionary.js');
   importLibrary('Scoring.js');
   importLibrary('Tile.js');
@@ -121,7 +122,7 @@ defineParticle(({DomParticle, resolver}) => {
    <div class="loadingDictionary" hidden="{{hideDictionaryLoading}}">
      Loading dictionary&hellip;
    </div>
-   <div class="gameInfo" hidden="{{hideGameInfo}}">
+   <div class="gameInfo" hidden="{{hideGameInfo}}" tabindex="-1" on-keypress="_onKeyPress">
      <div class="score">Score: <span>{{score}}</span></div>
      <div class="move">Move: <span>{{move}}</span></div>
      <div class="longestWord">Longest word: <span>{{longestWord}}</span></div>
@@ -130,6 +131,7 @@ defineParticle(({DomParticle, resolver}) => {
      <div>
        <button disabled="{{submitMoveDisabled}}" on-click="_onSubmitMove">Submit Move</button>
        <button disabled="{{shuffleDisabled}}" style%="padding-left: 2em" on-click="_onShuffle">Shuffle</button>
+       <button hidden="{{hideSolve}}" style%="padding-left: 2em" on-click="_onSolve">Solve</button>
      </div>
    </div>
    <div class="board">
@@ -196,20 +198,19 @@ defineParticle(({DomParticle, resolver}) => {
       return tiles;
     }
     _ensureDictionaryLoaded(state) {
-      if (state.dictionaryLoadingStarted)
-        return;
-
-      this._setState({dictionaryLoadingStarted: true});
-      const particleRef = this;
-      const startstamp = performance.now();
-      fetch(DICTIONARY_URL).then(response => response.text().then(text => {
-        const dictionary = new Dictionary(text);
-        const endstamp = performance.now();
-        const elapsed = Math.floor(endstamp - startstamp);
-        info(`Loaded dictionary [time=${elapsed}ms, wordCount=${
-            dictionary.size}].`);
-        particleRef._setState({dictionary: dictionary});
-      }));
+      if (!state.dictionaryLoadingStarted) {
+        this._setState({dictionaryLoadingStarted: true});
+        const particleRef = this;
+        const startstamp = performance.now();
+        fetch(DICTIONARY_URL).then(response => response.text().then(text => {
+          const dictionary = new Dictionary(text);
+          const endstamp = performance.now();
+          const elapsed = Math.floor(endstamp - startstamp);
+          info(`Loaded dictionary [time=${elapsed}ms, wordCount=${
+              dictionary.size}].`);
+          particleRef._setState({dictionary});
+        }));
+      }
     }
     _tilesToWord(tiles) {
       return tiles.map(t => t.letter).join('');
@@ -229,12 +230,15 @@ defineParticle(({DomParticle, resolver}) => {
         score = Scoring.wordScore(moveTiles);
         info(`Scoring word [word=${word}, score=${score}].`);
         const gameOver = tileBoard.applyMove(moveTiles);
-        if (gameOver) info('Ending game.');
+        if (gameOver)
+          info('Ending game.');
         this._setStats(Scoring.applyMoveStats(props.stats, word, score));
         this._setBoard({
           letters: tileBoard.toString(),
           shuffleAvailableCount: tileBoard.shuffleAvailableCount,
-          state: TileBoard.StateToNumber[gameOver ? TileBoard.State.GAME_OVER : TileBoard.State.ACTIVE]
+          state: TileBoard.StateToNumber
+                     [gameOver ? TileBoard.State.GAME_OVER :
+                                 TileBoard.State.ACTIVE]
         });
       }
       moveData = {coordinates: ''};
@@ -252,12 +256,13 @@ defineParticle(({DomParticle, resolver}) => {
       }
       if (!props.stats)
         this._setStats(Scoring.create());
+      // TODO(wkorman): Only construct tile board when none yet exists in state.
       const tileBoard = new TileBoard(propsBoard);
       tileBoard.chanceOfFireOnRefill = CHANCE_OF_FIRE_ON_REFILL;
       let [moveData, moveTiles, moveScore] =
           this._processSubmittedMove(props, state, tileBoard);
       this._setState({
-        tileBoard: tileBoard,
+        tileBoard,
         move: moveData,
         selectedTiles: moveTiles,
         moveScore: Scoring.wordScore(moveTiles),
@@ -328,7 +333,11 @@ defineParticle(({DomParticle, resolver}) => {
     _render(props, state) {
       // info('render [props=', props, 'state=', state, '].');
       if (!state.tileBoard)
-        return {hideDictionaryLoading: false, hideGameInfo: true, hideGameOver: true};
+        return {
+          hideDictionaryLoading: false,
+          hideGameInfo: true,
+          hideGameOver: true
+        };
       let boardModels = this._boardToModels(
           state.tileBoard, state.move ? state.move.coordinates : '');
       let annotationModels = this._selectedTilesToModels(state.selectedTiles);
@@ -348,11 +357,15 @@ defineParticle(({DomParticle, resolver}) => {
         score:
             `${state.score} (${props.stats ? props.stats.moveCount : 0} moves)`,
         submitMoveDisabled: gameOver || !submitMoveEnabled,
-        shuffleDisabled: gameOver,
+        shuffleDisabled: gameOver || state.tileBoard.shuffleAvailableCount <= 0,
+        hideSolve: !state.debugMode,
         hideDictionaryLoading: true,
         hideGameInfo: false,
         hideGameOver: !gameOver
       };
+    }
+    _onKeyPress(e, state) {
+      this._setState({debugMode:true});
     }
     _onTileMouseDown(e, state) {
       state.lastTileMoused = e.data.value;
@@ -421,6 +434,30 @@ defineParticle(({DomParticle, resolver}) => {
           shuffleAvailableCount: state.tileBoard.shuffleAvailableCount
         });
       }
+    }
+    _onSolve(e, state) {
+      const solver = new BoardSolver(state.dictionary, state.tileBoard);
+      const words = solver.getValidWords();
+
+      let longestWord;
+      let highestScoringWord;
+      let highestScore = 0;
+      for (let i = 0; i < words.length; i++) {
+        if (!longestWord || words[i].text.length > longestWord.text.length)
+          longestWord = words[i];
+        let wordTiles = [];
+        for (let j = 0; j < words[i].text.length; j++)
+          wordTiles.push(new Tile(0, words[i].text.charAt(j)));
+        let wordScore = Scoring.wordScore(wordTiles);
+        if (wordScore > highestScore) {
+          highestScore = wordScore;
+          highestScoringWord = words[i];
+        }
+      }
+
+      info(`Solving [words=${words.length}, longestWord=${
+          longestWord}, highestScoringWord=${highestScoringWord} (${
+          highestScore})].`);
     }
     _setMove(values) {
       this._setView('move', values);
