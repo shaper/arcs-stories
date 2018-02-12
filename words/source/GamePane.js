@@ -40,6 +40,8 @@ defineParticle(({DomParticle, resolver}) => {
      width: 357px;
      position: relative;
      user-select: none;
+     margin-left: auto;
+     margin-right: auto;
      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
    }
    [${host}] .board .tile {
@@ -139,7 +141,7 @@ defineParticle(({DomParticle, resolver}) => {
      <span>{{boardCells}}</span><span>{{annotations}}</span></div>
  </div>
  <template board-cell>
-   <div class="{{classes}}" style%="{{style}}" on-mousedown="_onTileMouseDown" on-mouseup="_onTileMouseUp" on-mouseover="_onTileMouseOver" value="{{index}}">
+   <div class="{{classes}}" style%="{{style}}" on-mousedown="_onTileMouseDown" on-mouseup="_onTileMouseUp" on-mousemove="_onTileMouseMove" value="{{index}}">
      <span>{{letter}}</span><div class="points">{{points}}</div>
    </div>
  </template>
@@ -375,7 +377,7 @@ defineParticle(({DomParticle, resolver}) => {
       state.lastTileMoused = null;
       this._setState({lastTileMoused: state.lastTileMoused});
     }
-    _onTileMouseOver(e, state) {
+    _onTileMouseMove(e, state) {
       if (state.lastTileMoused && state.lastTileMoused != e.data.value) {
         state.lastTileMoused = e.data.value;
         this._selectTile(e, state);
