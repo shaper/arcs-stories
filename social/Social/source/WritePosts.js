@@ -17,7 +17,6 @@ defineParticle(({DomParticle}) => {
     border: none;
     background: #d4d4d4;
     padding: 10px;
-    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
     border-bottom: solid 1px;
     border-bottom-color: grey;
     width: 300px;
@@ -26,6 +25,7 @@ defineParticle(({DomParticle}) => {
     outline: none;
   }
   [edit] {
+    font-family: 'Google Sans', sans-serif;
     margin: 25px;
   }
 </style>

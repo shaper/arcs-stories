@@ -13,9 +13,10 @@ defineParticle(({DomParticle}) => {
 <style>
   .material-icons.md-14 { font-size: 14px; }
 
-  [msg] {
-    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
-    font-size: 9pt;
+  [msg], [owner] {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 16pt;
+    color: rgba(0, 0, 0, 0.87);
   }
   [msg] input {
     border: none;
@@ -29,21 +30,32 @@ defineParticle(({DomParticle}) => {
     outline: none;
   }
   [msg] {
-    margin: 20px;
-    padding-bottom: 3px;
+    padding-bottom: 16px;
     border-bottom: solid 0.5px;
     border-bottom-color: #d4d4d4;
-    width: 320px;
   }
   [msg] [title] {
-    margin-bottom: 4px;
+    margin-left: 56px;
+    margin-bottom: 14px;
+    margin-top: 18px;
+  }
+  [msg] [content] {
+    margin-left: 56px;
+  }
+  [owner] {
+    font-size: 14pt;
+    margin-right: 6px;
+  }
+  [when] {
+    font-size: 12pt;
+    color: rgba(0, 0, 0, 0.4);
   }
 </style>
 <x-list items="{{posts}}">
     <template>
     <div msg>
       <div title>
-        <strong>~<span>{{owner}}</span></strong>&nbsp;written <span>{{time}}</span> ago
+        <span owner>{{owner}}</span><span when>{{time}}</span>
         <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">clear</i>
         <br>
       </div>
