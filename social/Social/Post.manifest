@@ -6,12 +6,11 @@
 // subject to an additional IP rights grant found at
 // http://polymer.github.io/PATENTS.txt
 
-import 'https://$cdn/artifacts/Things/Thing.schema'
-
-schema Post extends Thing
+schema Post
   normative
     // Time this post was created in milliseconds since the epoch.
     Number createdTimestamp
+    Text name
   optional
     // The opaque user id of the user who created and thus owns this post.
     Text owner
