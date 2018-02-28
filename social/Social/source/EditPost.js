@@ -1,0 +1,77 @@
+/**
+ * @license
+ * Copyright (c) 2018 Google Inc. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * Code distributed by Google as part of this project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+'use strict';
+
+defineParticle(({DomParticle, log}) => {
+  const host = `social-edit-post`;
+
+  const template = `
+<style>
+  [${host}] textarea {
+    border: none;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 16pt;
+    /* TODO(wkorman|sjmiles): Rework in conjunction with DetailSlider to allow
+       something functionally like height: 100%. */
+    height: 300px;
+    margin-top: 64px;
+    width: 100%;
+    outline: none;
+  }
+  [${host}] {
+    font-family: 'Google Sans', sans-serif;
+  }
+  [${host}] [post-buttons] {
+    /* TODO(wkorman|sjmiles): Make grey border full bleed via DetailSlider. */
+    /* border-bottom: 1px solid grey; */
+    position: absolute;
+    right: 24px;
+    top: 26px;
+  }
+</style>
+<div ${host}>
+  <div post-buttons>
+    <i class="material-icons" on-click="_onDeletePost">delete</i>
+    <i class="material-icons" on-click="_onAttachPhoto">attach_file</i>
+    <i class="material-icons" on-click="_onSavePost">done</i>
+  </div>
+  <textarea on-change="_onCaptureText">{{name}}</textarea>
+</div>
+  `.trim();
+
+  return class extends DomParticle {
+    get template() {
+      return template;
+    }
+    _getInitialState() {
+      return {name: ''};
+    }
+    _render(props, state) {
+      return {
+        name: state.name,
+      };
+    }
+    // TODO(wkorman): Add onDeletePost, onAttachPost.
+    _onSavePost(e, state) {
+      const Post = this._views.get('posts').entityClass;
+      this._views.get('post').set(
+          new Post({name: state.name, createdTimestamp: Date.now()}));
+      // Set the state to trigger render().
+      // TODO(wkorman): Maybe remove below?
+      this._setState({name: ''});
+    }
+    _onCaptureText(e, state) {
+      if (state.name !== e.data.value) {
+        this._setState({name: e.data.value});
+      }
+    }
+  };
+});

@@ -7,24 +7,32 @@
 // http://polymer.github.io/PATENTS.txt
 
 import 'Particles.manifest'
+import 'https://$cdn/artifacts/Common/Detail.manifest'
 
 // Allows creating multiple posts by the author and viewing all posts created
 // in this Arc.
 recipe
   create #posts as posts
+  create as post
   use #user as user
   use #identities as people
   // TODO(wkorman): Restore when #friends_avatar is operational again.
   // map #friends_avatar as avatars
 
   WritePosts
-    posts -> posts
+    posts = posts
+    post = post
+  EditPost
+    posts = posts
+    post = post
   ShowPosts
     posts = posts
     user <- user
     // TODO(wkorman): Restore when #friends_avatar is operational again.
     // avatars <- avatars
     people <- people
+  DetailSlider
+    selected = post
 
 // A feed that aggregates everything a user and friends say.
 recipe
