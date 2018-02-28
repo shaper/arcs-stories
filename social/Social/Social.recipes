@@ -14,12 +14,16 @@ recipe
   create #posts as posts
   use #user as user
   use #identities as people
+  // TODO(wkorman): Restore when #friends_avatar is operational again.
+  // map #friends_avatar as avatars
 
   WritePosts
     posts -> posts
   ShowPosts
     posts = posts
     user <- user
+    // TODO(wkorman): Restore when #friends_avatar is operational again.
+    // avatars <- avatars
     people <- people
 
 // A feed that aggregates everything a user and friends say.
@@ -27,10 +31,14 @@ recipe
   // Right now, only set handles from friends are collated together ==> my posts
   // will not appear on the feed.
   map #friends_posts as posts
+  // TODO(wkorman): Restore when #friends_avatar is operational again.
+  // map #friends_avatar as avatars
   use #user as user
   use #identities as people
 
   OnlyShowPosts
     posts <- posts
     user <- user
+    // TODO(wkorman): Restore when #friends_avatar is operational again.
+    // avatars <- avatars
     people <- people
