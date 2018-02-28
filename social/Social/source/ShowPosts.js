@@ -9,15 +9,17 @@
 'use strict';
 
 defineParticle(({DomParticle}) => {
+  const host = `social-show-posts`;
+
   const template = `
 <style>
-  .material-icons.md-14 { font-size: 14px; }
-  [msg], [owner] {
+  [${host}] .material-icons.md-14 { font-size: 14px; }
+  [${host}] {
     font-family: 'Google Sans', sans-serif;
     font-size: 16pt;
     color: rgba(0, 0, 0, 0.87);
   }
-  [msg] [avatar] {
+  [${host}] [msg] [avatar] {
     display: inline-block;
     height: 24px;
     width: 24px;
@@ -27,50 +29,96 @@ defineParticle(({DomParticle}) => {
     margin-right: 16px;
     vertical-align: bottom;
   }
-  [msg] input {
+  [${host}] [header] {
+    background-color: white;
+    border-bottom: 1px solid grey;
+    border-top: 1px solid grey;
+    position: fixed;
+    text-align: center;
+    top: 56px;
+    width: 512px;
+  }
+  [${host}] [postContent],
+  [${host}] [zerostate] {
+    margin-top: 162px;
+  }
+  [${host}] [header] [blogAvatar] {
+    display: inline-block;
+    height: 56px;
+    width: 56px;
+    min-width: 56px;
+    border-radius: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+  }
+  [${host}] [header] [blogDescription] {
+    color: rgba(0, 0, 0, 0.4);
+    margin-bottom: 14px;
+  }
+  [${host}] [zerostate] {
+    font-size: 32pt;
+    margin-left: 56px;
+    margin-right: 56px;
+    text-align: center;
+  }
+  [${host}] [msg] input {
     border: none;
     background: #d4d4d4;
     padding: 10px;
-    border-bottom: solid 1px;
-    border-bottom-color: grey;
+    border-bottom: 1px solid grey;
     width: 300px;
   }
-  [msg] input:focus{
+  [${host}] [msg] input:focus{
     outline: none;
   }
-  [msg] {
+  [${host}] [msg] {
     padding-bottom: 16px;
     border-bottom: solid 0.5px;
     border-bottom-color: #d4d4d4;
   }
-  [msg] [title] {
+  [${host}] [msg] [title] {
     margin-bottom: 14px;
     margin-top: 18px;
   }
-  [msg] [content] {
+  [${host}] [msg] [content] {
     margin-left: 56px;
   }
-  [owner] {
+  [${host}] [owner] {
     font-size: 14pt;
     margin-right: 6px;
   }
-  [when] {
+  [${host}] [when] {
     font-size: 12pt;
     color: rgba(0, 0, 0, 0.4);
   }
 </style>
-<x-list items="{{posts}}">
-    <template>
-    <div msg>
-      <div title>
-        <span avatar style='{{avatarStyle}}'></span><span owner>{{owner}}</span><span when>{{time}}</span>
-        <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">clear</i>
-        <br>
-      </div>
-      <div content value="{{id}}">{{name}}</div>
-    </div>
-    </template>
-</x-list>
+<div ${host}>
+  <div header>
+    <!-- TODO(wkorman): Find a way to collapse this with position: sticky
+         and scroll position or similar. -->
+    <div blogAvatar style='{{blogAvatarStyle}}'></div>
+    <div blogAuthor>{{blogAuthor}}</div>
+    <div blogDescription>Add a description</div>
+  </div>
+  <div zeroState hidden="{{hideZeroState}}">
+    Get started by naming your miniblog & creating your first post!
+  </div>
+  <div postContent>
+    <x-list items="{{posts}}">
+        <template>
+        <div msg>
+          <div title>
+            <span avatar style='{{avatarStyle}}'></span><span owner>{{owner}}</span><span when>{{time}}</span>
+            <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">clear</i>
+            <br>
+          </div>
+          <div content value="{{id}}">{{name}}</div>
+        </div>
+        </template>
+    </x-list>
+  </div>
+</div>
     `.trim();
 
   return class extends DomParticle {
@@ -140,7 +188,15 @@ defineParticle(({DomParticle}) => {
       };
     }
     _render(props, {posts}) {
-      if (posts) {
+      // TODO(wkorman): Use actual avatar image.
+      const blogAvatarUrl = '../../assets/avatars/user (13).png';
+      const blogAvatarStyle =
+          `background: url('${blogAvatarUrl}') center no-repeat; background-size: cover;`;
+      // TODO(wkorman): Use Arc-creator/owner name rather than viewing user
+      // for the blog author.
+      const blogAuthor = props.user ? props.user.name : '';
+      if (posts && posts.length > 0) {
+        console.log(`Posts [size=${posts.length}]`);
         const sortedPosts = this._sortPostsByDateAscending(posts);
         const viewingUserName = props.user.name;
         const viewingUserAvatar = '../../assets/avatars/user (13).png';
@@ -149,10 +205,17 @@ defineParticle(({DomParticle}) => {
         // this originally intended to do?
         const visible = this._views.get('posts').canWrite;
         return {
+          hideZeroState: true,
+          blogAuthor, blogAvatarStyle,
           posts: sortedPosts.map(
               p => this._postToModel(
                   viewingUserName, viewingUserAvatar, visible, p))
         };
+      } else {
+        return {
+          hideZeroState: false,
+          blogAuthor, blogAvatarStyle
+         };
       }
     }
   }

@@ -25,6 +25,11 @@ particle OnlyShowPosts in 'source/ShowPosts.js'
   description `show ${posts}`
 
 particle WritePosts in 'source/WritePosts.js'
-  WritePosts(out [Post] posts)
+  WritePosts(inout Post post, inout [Post] posts)
   consume root
   description `write posts`
+
+particle EditPost in 'source/EditPost.js'
+  EditPost(inout Post post, inout [Post] posts)
+  consume content
+  description `edit a post`
