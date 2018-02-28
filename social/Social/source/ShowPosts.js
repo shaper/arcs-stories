@@ -12,11 +12,20 @@ defineParticle(({DomParticle}) => {
   const template = `
 <style>
   .material-icons.md-14 { font-size: 14px; }
-
   [msg], [owner] {
     font-family: 'Google Sans', sans-serif;
     font-size: 16pt;
     color: rgba(0, 0, 0, 0.87);
+  }
+  [msg] [avatar] {
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    min-width: 24px;
+    border-radius: 100%;
+    margin-left: 16px;
+    margin-right: 16px;
+    vertical-align: bottom;
   }
   [msg] input {
     border: none;
@@ -35,7 +44,6 @@ defineParticle(({DomParticle}) => {
     border-bottom-color: #d4d4d4;
   }
   [msg] [title] {
-    margin-left: 56px;
     margin-bottom: 14px;
     margin-top: 18px;
   }
@@ -55,7 +63,7 @@ defineParticle(({DomParticle}) => {
     <template>
     <div msg>
       <div title>
-        <span owner>{{owner}}</span><span when>{{time}}</span>
+        <span avatar style='{{avatarStyle}}'></span><span owner>{{owner}}</span><span when>{{time}}</span>
         <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">clear</i>
         <br>
       </div>
@@ -75,10 +83,20 @@ defineParticle(({DomParticle}) => {
         people.map(p => peopleMap[p.id] = p.name);
       return peopleMap;
     }
+    _avatarSetToMap(avatars) {
+      const avatarMap = {};
+      if (avatars)
+        avatars.map(a => avatarMap[a.owner] = a.url);
+      return avatarMap;
+    }
     _willReceiveProps(props) {
-      if (props.posts)
-        this._setState(
-            {posts: props.posts, people: this._peopleSetToMap(props.people)});
+      if (props.posts) {
+        this._setState({
+          posts: props.posts,
+          people: this._peopleSetToMap(props.people),
+          avatars: this._avatarSetToMap(props.avatars)
+        });
+      }
     }
     _onClick(e, state) {
       const targetPost = state.posts.find(p => p.id == e.data.value);
@@ -105,12 +123,19 @@ defineParticle(({DomParticle}) => {
         return b.createdTimestamp - a.createdTimestamp;
       });
     }
-    _postToModel(viewingUserName, visible, post) {
+    _postToModel(viewingUserName, viewingUserAvatar, visible, post) {
+      // const url = state.arc._loader._resolve(state.avatar.rawData.url);
+      // const avatarUrl =
+      //     post.owner ? this._state.avatars[post.owner] : viewingUserAvatar;
+      // TODO(wkorman): Fix this up once #friends_avatar is operational again.
+      const avatarUrl = viewingUserAvatar;
       return {
         name: post.name,
         id: post.id,
         time: this._timeSince(post.createdTimestamp),
         style: {display: visible ? 'inline' : 'none'},
+        avatarStyle: `background: url('${
+            avatarUrl}') center no-repeat; background-size: cover;`,
         owner: post.owner ? this._state.people[post.owner] : viewingUserName
       };
     }
@@ -118,14 +143,17 @@ defineParticle(({DomParticle}) => {
       if (posts) {
         const sortedPosts = this._sortPostsByDateAscending(posts);
         const viewingUserName = props.user.name;
+        const viewingUserAvatar = '../../assets/avatars/user (13).png';
+        // const viewingUserAvatar = this._state.avatars[props.user.id].url;
         // TODO(wkorman): Visibility seems like it's all or nothing. What was
         // this originally intended to do?
         const visible = this._views.get('posts').canWrite;
         return {
           posts: sortedPosts.map(
-              p => this._postToModel(viewingUserName, visible, p))
+              p => this._postToModel(
+                  viewingUserName, viewingUserAvatar, visible, p))
         };
       }
     }
-  };
+  }
 });
