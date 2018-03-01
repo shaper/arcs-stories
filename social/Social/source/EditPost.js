@@ -15,33 +15,40 @@ defineParticle(({DomParticle, log}) => {
 
   const template = `
 <style>
-  [${host}] textarea {
-    border: none;
-    font-family: 'Google Sans', sans-serif;
-    font-size: 16pt;
-    /* TODO(wkorman|sjmiles): Rework in conjunction with DetailSlider to allow
-       something functionally like height: 100%. */
-    height: 300px;
-    margin-top: 64px;
-    width: 100%;
-    outline: none;
-  }
-  [${host}] {
-    font-family: 'Google Sans', sans-serif;
-  }
-  [${host}] [post-buttons] {
-    /* TODO(wkorman|sjmiles): Make grey border full bleed via DetailSlider. */
-    /* border-bottom: 1px solid grey; */
-    position: absolute;
-    right: 24px;
-    top: 26px;
-  }
+[${host}] textarea {
+  border: none;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 16pt;
+  /* TODO(wkorman|sjmiles): Rework in conjunction with DetailSlider to allow
+     something functionally like height: 100%. */
+  height: 300px;
+  width: 100%;
+  outline: none;
+  resize: none;
+}
+[${host}] {
+  font-family: 'Google Sans', sans-serif;
+  padding: 8px;
+}
+[${host}] [post-buttons] {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+[${host}] [post-buttons] i {
+  border-radius: 100%;
+  display: inline-block;
+  padding: 8px;
+}
+[${host}] [post-buttons] i:active {
+  background-color: #b0e3ff;
+}
 </style>
 <div ${host}>
   <div post-buttons>
     <i class="material-icons" on-click="_onDeletePost">delete</i>
     <i class="material-icons" on-click="_onAttachPhoto">attach_file</i>
-    <i class="material-icons" on-click="_onSavePost">done</i>
+    <i class="material-icons live" on-click="_onSavePost">done</i>
   </div>
   <textarea on-change="_onCaptureText">{{name}}</textarea>
 </div>

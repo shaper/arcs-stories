@@ -20,7 +20,7 @@ defineParticle(({DomParticle, log}) => {
   cursor: pointer;
   position: fixed;
   margin-left: 440px;
-  bottom: 48px;
+  bottom: 80px;
   padding: 8px;
   border-radius: 100%;
   box-shadow: 1px 1px 5px 0px rgba(0,0,0,0.75);
@@ -28,9 +28,11 @@ defineParticle(({DomParticle, log}) => {
 }
 [${host}] i {
   display: block;
-  background-color: #b0e3ff;
   border-radius: 100%;
   font-size: 44px;
+}
+[${host}] i:active {
+  background-color: #b0e3ff;
 }
 </style>
 <div ${host}>
