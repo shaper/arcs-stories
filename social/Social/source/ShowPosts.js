@@ -31,16 +31,9 @@ defineParticle(({DomParticle, resolver, log}) => {
   }
   [${host}] [header] {
     background-color: white;
-    border-bottom: 1px solid grey;
-    border-top: 1px solid grey;
-    position: fixed;
+    border-bottom: 1px solid lightgrey;
+    border-top: 1px solid lightgrey;
     text-align: center;
-    top: 56px;
-    width: 512px;
-  }
-  [${host}] [postContent],
-  [${host}] [zerostate] {
-    margin-top: 162px;
   }
   [${host}] [header] [blogAvatar] {
     display: inline-block;
@@ -55,11 +48,11 @@ defineParticle(({DomParticle, resolver, log}) => {
   [${host}] [header] [blogDescription] {
     color: rgba(0, 0, 0, 0.4);
     margin-bottom: 14px;
+    text-decoration: underline lightgrey;
   }
   [${host}] [zerostate] {
     font-size: 32pt;
-    margin-left: 56px;
-    margin-right: 56px;
+    margin: 0.5em 56px auto 56px;
     text-align: center;
   }
   [${host}] [msg] input {
@@ -186,8 +179,8 @@ defineParticle(({DomParticle, resolver, log}) => {
       };
     }
     _render(props, {posts, avatars}) {
-      // TODO(wkorman): Use Arc-creator/owner name rather than viewing user
-      // for the blog author.
+      // TODO(wkorman): Use BlogMetadata for the creator name/avatar.
+      // For now we use the viewing user.
       const blogAuthor = props.user ? props.user.name : '';
       const blogAvatarUrl = props.user ? resolver(avatars[props.user.id]) : '';
       const blogAvatarStyle = `background: url('${
@@ -195,10 +188,8 @@ defineParticle(({DomParticle, resolver, log}) => {
       if (posts && posts.length > 0) {
         const sortedPosts = this._sortPostsByDateAscending(posts);
         const viewingUserName = props.user.name;
-        const viewingUserAvatar = '../../assets/avatars/user (13).png';
-        // const viewingUserAvatar = this._state.avatars[props.user.id].url;
-        // TODO(wkorman): Visibility seems like it's all or nothing. What was
-        // this originally intended to do?
+        const viewingUserAvatar =
+            props.user ? resolver(avatars[props.user.id]) : '';
         const visible = this._views.get('posts').canWrite;
         return {
           hideZeroState: true,
