@@ -11,16 +11,12 @@ import 'https://$cdn/artifacts/People/Avatar.schema'
 import 'Post.manifest'
 
 particle ShowPosts in 'source/ShowPosts.js'
-  ShowPosts(inout [Post] posts, in Person user, in [Person] people)
-  // TODO(wkorman): Restore when #friends_avatar is operational again.
-  // ShowPosts(inout [Post] posts, in Person user, in [Person] people, in [Avatar] avatars)
+  ShowPosts(in [Post] posts, in Person user, in [Person] people, in [Avatar] avatars)
   consume root
   description `show ${posts}`
 
 particle OnlyShowPosts in 'source/ShowPosts.js'
-  OnlyShowPosts(in [Post] posts, in Person user, in [Person] people)
-  // TODO(wkorman): Restore when #friends_avatar is operational again.
-  // OnlyShowPosts(in [Post] posts, in Person user, in [Person] people, in [Avatar] avatars)
+  OnlyShowPosts(in [Post] posts, in Person user, in [Person] people, in [Avatar] avatars)
   consume root
   description `show ${posts}`
 

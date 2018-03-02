@@ -10,7 +10,7 @@
 
 'use strict';
 
-defineParticle(({DomParticle, log}) => {
+defineParticle(({DomParticle}) => {
   const host = `social-edit-post`;
 
   const template = `
@@ -50,7 +50,7 @@ defineParticle(({DomParticle, log}) => {
     <i class="material-icons" on-click="_onAttachPhoto">attach_file</i>
     <i class="material-icons live" on-click="_onSavePost">done</i>
   </div>
-  <textarea on-change="_onCaptureText">{{name}}</textarea>
+  <textarea on-change="_onCaptureText" value="{{name}}"></textarea>
 </div>
   `.trim();
 
@@ -71,8 +71,6 @@ defineParticle(({DomParticle, log}) => {
       const Post = this._views.get('posts').entityClass;
       this._views.get('post').set(
           new Post({name: state.name, createdTimestamp: Date.now()}));
-      // Set the state to trigger render().
-      // TODO(wkorman): Maybe remove below?
       this._setState({name: ''});
     }
     _onCaptureText(e, state) {

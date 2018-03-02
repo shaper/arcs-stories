@@ -16,8 +16,7 @@ recipe
   create as post
   use #user as user
   use #identities as people
-  // TODO(wkorman): Restore when #friends_avatar is operational again.
-  // map #friends_avatar as avatars
+  map #BOXED_avatar as avatars
 
   WritePosts
     posts = posts
@@ -28,25 +27,20 @@ recipe
   ShowPosts
     posts = posts
     user <- user
-    // TODO(wkorman): Restore when #friends_avatar is operational again.
-    // avatars <- avatars
+    avatars <- avatars
     people <- people
   DetailSlider
     selected = post
 
 // A feed that aggregates everything a user and friends say.
 recipe
-  // Right now, only set handles from friends are collated together ==> my posts
-  // will not appear on the feed.
-  map #friends_posts as posts
-  // TODO(wkorman): Restore when #friends_avatar is operational again.
-  // map #friends_avatar as avatars
+  map #BOXED_posts as posts
+  map #BOXED_avatar as avatars
   use #user as user
   use #identities as people
 
   OnlyShowPosts
-    posts <- posts
+    posts = posts
     user <- user
-    // TODO(wkorman): Restore when #friends_avatar is operational again.
-    // avatars <- avatars
+    avatars <- avatars
     people <- people
