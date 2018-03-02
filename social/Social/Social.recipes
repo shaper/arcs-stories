@@ -40,7 +40,7 @@ recipe
   use #identities as people
 
   OnlyShowPosts
-    posts = posts
+    posts <- posts
     user <- user
     avatars <- avatars
     people <- people

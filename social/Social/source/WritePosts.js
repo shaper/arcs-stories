@@ -10,7 +10,7 @@
 
 'use strict';
 
-defineParticle(({DomParticle, log}) => {
+defineParticle(({DomParticle, resolver, log}) => {
   const host = `social-write-posts`;
 
   const template = `
@@ -20,7 +20,7 @@ defineParticle(({DomParticle, log}) => {
   cursor: pointer;
   position: fixed;
   margin-left: 440px;
-  bottom: 80px;
+  bottom: 50px;
   padding: 8px;
   border-radius: 100%;
   box-shadow: 1px 1px 5px 0px rgba(0,0,0,0.75);
@@ -29,14 +29,16 @@ defineParticle(({DomParticle, log}) => {
 [${host}] i {
   display: block;
   border-radius: 100%;
-  font-size: 44px;
+  width: 24px;
+  height: 24px;
+  padding: 8px;
 }
 [${host}] i:active {
-  background-color: #b0e3ff;
+  background-color: #b0e3ff !important;
 }
 </style>
 <div ${host}>
-  <i class="material-icons" on-click="_onOpenEditor">add</i>
+  <i style="{{add_icon_style}}" on-click="_onOpenEditor"></i>
 </div>
   `.trim();
 
@@ -72,6 +74,9 @@ defineParticle(({DomParticle, log}) => {
       }
       return {
         name: state.name,
+        add_icon_style: `background: url(${
+            resolver(
+                'WritePosts/../assets/ic_rainbow_add.svg')}) center no-repeat;`
       };
     }
     _onOpenEditor(e, state) {
