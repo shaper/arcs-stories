@@ -8,7 +8,7 @@
 
 'use strict';
 
-defineParticle(({DomParticle}) => {
+defineParticle(({DomParticle, resolver, log}) => {
   const host = `social-show-posts`;
 
   const template = `
@@ -105,6 +105,7 @@ defineParticle(({DomParticle}) => {
     Get started by naming your miniblog & creating your first post!
   </div>
   <div postContent>
+    <!-- TODO(wkorman): Convert to standard list particle. -->
     <x-list items="{{posts}}">
         <template>
         <div msg>
@@ -172,11 +173,8 @@ defineParticle(({DomParticle}) => {
       });
     }
     _postToModel(viewingUserName, viewingUserAvatar, visible, post) {
-      // const url = state.arc._loader._resolve(state.avatar.rawData.url);
-      // const avatarUrl =
-      //     post.owner ? this._state.avatars[post.owner] : viewingUserAvatar;
-      // TODO(wkorman): Fix this up once #friends_avatar is operational again.
-      const avatarUrl = viewingUserAvatar;
+      const avatarUrl = post.owner ? resolver(this._state.avatars[post.owner]) :
+                                     viewingUserAvatar;
       return {
         name: post.name,
         id: post.id,
@@ -187,16 +185,14 @@ defineParticle(({DomParticle}) => {
         owner: post.owner ? this._state.people[post.owner] : viewingUserName
       };
     }
-    _render(props, {posts}) {
-      // TODO(wkorman): Use actual avatar image.
-      const blogAvatarUrl = '../../assets/avatars/user (13).png';
-      const blogAvatarStyle =
-          `background: url('${blogAvatarUrl}') center no-repeat; background-size: cover;`;
+    _render(props, {posts, avatars}) {
       // TODO(wkorman): Use Arc-creator/owner name rather than viewing user
       // for the blog author.
       const blogAuthor = props.user ? props.user.name : '';
+      const blogAvatarUrl = props.user ? resolver(avatars[props.user.id]) : '';
+      const blogAvatarStyle = `background: url('${
+          blogAvatarUrl}') center no-repeat; background-size: cover;`;
       if (posts && posts.length > 0) {
-        console.log(`Posts [size=${posts.length}]`);
         const sortedPosts = this._sortPostsByDateAscending(posts);
         const viewingUserName = props.user.name;
         const viewingUserAvatar = '../../assets/avatars/user (13).png';
@@ -206,16 +202,14 @@ defineParticle(({DomParticle}) => {
         const visible = this._views.get('posts').canWrite;
         return {
           hideZeroState: true,
-          blogAuthor, blogAvatarStyle,
+          blogAuthor,
+          blogAvatarStyle,
           posts: sortedPosts.map(
               p => this._postToModel(
                   viewingUserName, viewingUserAvatar, visible, p))
         };
       } else {
-        return {
-          hideZeroState: false,
-          blogAuthor, blogAvatarStyle
-         };
+        return {hideZeroState: false, blogAuthor, blogAvatarStyle, posts: []};
       }
     }
   }

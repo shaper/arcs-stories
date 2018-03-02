@@ -67,9 +67,7 @@ defineParticle(({DomParticle, log}) => {
           this._views.get('posts').store(post);
         }
 
-        // TODO(wkorman): And then null it out so that the editor goes away (if
-        // we want the editor to go away immediately), otherwise, hitting the
-        // 'X' button should do it.
+        // Clear out the post under edit so that the editor goes away.
         this._views.get('post').clear();
       }
       return {
