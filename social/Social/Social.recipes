@@ -14,9 +14,10 @@ import 'https://$cdn/artifacts/Common/Detail.manifest'
 recipe
   create #posts as posts
   create as post
+  create #blog_metadata as metadata
+  map #BOXED_avatar as avatars
   use #user as user
   use #identities as people
-  map #BOXED_avatar as avatars
 
   WritePosts
     posts = posts
@@ -26,6 +27,7 @@ recipe
     post = post
   ShowPosts
     posts = posts
+    metadata = metadata
     user <- user
     avatars <- avatars
     people <- people

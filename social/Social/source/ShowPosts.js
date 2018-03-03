@@ -131,8 +131,24 @@ defineParticle(({DomParticle, resolver, log}) => {
         avatars.map(a => avatarMap[a.owner] = a.url);
       return avatarMap;
     }
+    _initBlogMetadata(props) {
+      if (!props.metadata) {
+        const metadataHandle = this._views.get('metadata');
+        // Note that the aggregated feed recipe use case for this particle does
+        // not provide a metadata handle at all.
+        // TODO(wkorman): Consider splitting this particle into separate
+        // ones -- one for working with a single miniblog and a separate one
+        // to act as the feed, as differing logic is starting to get complex.
+        if (metadataHandle) {
+          const BlogMetadata = metadataHandle.entityClass;
+          metadataHandle.set(
+              new BlogMetadata({blogOwner: props.user.id, description: ''}));
+        }
+      }
+    }
     _willReceiveProps(props) {
       if (props.posts) {
+        this._initBlogMetadata(props);
         this._setState({
           posts: props.posts,
           people: this._peopleSetToMap(props.people),
@@ -160,12 +176,37 @@ defineParticle(({DomParticle, resolver, log}) => {
       }
       return time;
     }
+
+    _avatarToStyle(url) {
+      return `background: url('${
+          url}') center no-repeat; background-size: cover;`;
+    }
+    _blogOwnerName(metadata) {
+      const unknownName = 'Unknown';
+      let name = unknownName;
+      if (metadata) {
+        name = this._state.people[metadata.blogOwner] || unknownName;
+      }
+      return name;
+    }
+    _blogOwnerAvatarStyle(metadata, avatars) {
+      const unknownAvatarUrl = '';
+      let avatarUrl = unknownAvatarUrl;
+      if (metadata) {
+        avatarUrl = resolver(avatars[metadata.blogOwner]) || unknownAvatarUrl;
+      }
+      return this._avatarToStyle(avatarUrl);
+    }
     _sortPostsByDateAscending(posts) {
       return posts.sort((a, b) => {
         return b.createdTimestamp - a.createdTimestamp;
       });
     }
     _postToModel(viewingUserName, viewingUserAvatar, visible, post) {
+      // TODO(wkorman): The below is invalid when a user views another
+      // user's miniblog arc directly (i.e. not as an aggregated feed),
+      // since we won't have boxed owner info in that case. Rework this
+      // to persist the owner id with each post.
       const avatarUrl = post.owner ? resolver(this._state.avatars[post.owner]) :
                                      viewingUserAvatar;
       return {
@@ -173,23 +214,17 @@ defineParticle(({DomParticle, resolver, log}) => {
         id: post.id,
         time: this._timeSince(post.createdTimestamp),
         style: {display: visible ? 'inline' : 'none'},
-        avatarStyle: `background: url('${
-            avatarUrl}') center no-repeat; background-size: cover;`,
+        avatarStyle: this._avatarToStyle(avatarUrl),
         owner: post.owner ? this._state.people[post.owner] : viewingUserName
       };
     }
-    _render(props, {posts, avatars}) {
-      // TODO(wkorman): Use BlogMetadata for the creator name/avatar.
-      // For now we use the viewing user.
-      const blogAuthor = props.user ? props.user.name : '';
-      const blogAvatarUrl = props.user ? resolver(avatars[props.user.id]) : '';
-      const blogAvatarStyle = `background: url('${
-          blogAvatarUrl}') center no-repeat; background-size: cover;`;
+    _render({user, metadata}, {posts, avatars}) {
+      const blogAuthor = this._blogOwnerName(metadata);
+      const blogAvatarStyle = this._blogOwnerAvatarStyle(metadata, avatars);
       if (posts && posts.length > 0) {
         const sortedPosts = this._sortPostsByDateAscending(posts);
-        const viewingUserName = props.user.name;
-        const viewingUserAvatar =
-            props.user ? resolver(avatars[props.user.id]) : '';
+        const viewingUserName = user.name;
+        const viewingUserAvatar = user ? resolver(avatars[user.id]) : '';
         const visible = this._views.get('posts').canWrite;
         return {
           hideZeroState: true,
