@@ -10,7 +10,7 @@
 
 'use strict';
 
-defineParticle(({DomParticle}) => {
+defineParticle(({DomParticle, log}) => {
   const host = `social-edit-post`;
 
   const template = `
@@ -53,7 +53,7 @@ defineParticle(({DomParticle}) => {
     <i class="material-icons" on-click="_onAttachPhoto">attach_file</i>
     <i class="material-icons live" on-click="_onSavePost">done</i>
   </div>
-  <textarea on-change="_onCaptureText" value="{{name}}"></textarea>
+  <textarea on-change="_onCaptureText" value="{{message}}"></textarea>
 </div>
   `.trim();
 
@@ -62,23 +62,31 @@ defineParticle(({DomParticle}) => {
       return template;
     }
     _getInitialState() {
-      return {name: ''};
+      return {message: ''};
+    }
+    _willReceiveProps(props) {
+      if (props.user) {
+        this._setState({user: props.user});
+      }
     }
     _render(props, state) {
       return {
-        name: state.name,
+        message: state.message,
       };
     }
     // TODO(wkorman): Add onDeletePost, onAttachPost.
     _onSavePost(e, state) {
       const Post = this._views.get('posts').entityClass;
-      this._views.get('post').set(
-          new Post({name: state.name, createdTimestamp: Date.now()}));
-      this._setState({name: ''});
+      this._views.get('post').set(new Post({
+        message: state.message,
+        createdTimestamp: Date.now(),
+        author: state.user.id
+      }));
+      this._setState({message: ''});
     }
     _onCaptureText(e, state) {
-      if (state.name !== e.data.value) {
-        this._setState({name: e.data.value});
+      if (state.message !== e.data.value) {
+        this._setState({message: e.data.value});
       }
     }
   };

@@ -27,6 +27,6 @@ particle WritePosts in 'source/WritePosts.js'
   description `write posts`
 
 particle EditPost in 'source/EditPost.js'
-  EditPost(inout Post post, inout [Post] posts)
+  EditPost(inout Post post, inout [Post] posts, in Person user)
   consume content
   description `edit a post`
