@@ -107,7 +107,7 @@ defineParticle(({DomParticle, resolver, log}) => {
             <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">clear</i>
             <br>
           </div>
-          <div content value="{{id}}">{{name}}</div>
+          <div content value="{{id}}">{{message}}</div>
         </div>
         </template>
     </x-list>
@@ -176,7 +176,6 @@ defineParticle(({DomParticle, resolver, log}) => {
       }
       return time;
     }
-
     _avatarToStyle(url) {
       return `background: url('${
           url}') center no-repeat; background-size: cover;`;
@@ -202,20 +201,15 @@ defineParticle(({DomParticle, resolver, log}) => {
         return b.createdTimestamp - a.createdTimestamp;
       });
     }
-    _postToModel(viewingUserName, viewingUserAvatar, visible, post) {
-      // TODO(wkorman): The below is invalid when a user views another
-      // user's miniblog arc directly (i.e. not as an aggregated feed),
-      // since we won't have boxed owner info in that case. Rework this
-      // to persist the owner id with each post.
-      const avatarUrl = post.owner ? resolver(this._state.avatars[post.owner]) :
-                                     viewingUserAvatar;
+    _postToModel(visible, post) {
       return {
-        name: post.name,
+        message: post.message,
         id: post.id,
         time: this._timeSince(post.createdTimestamp),
         style: {display: visible ? 'inline' : 'none'},
-        avatarStyle: this._avatarToStyle(avatarUrl),
-        owner: post.owner ? this._state.people[post.owner] : viewingUserName
+        avatarStyle:
+            this._avatarToStyle(resolver(this._state.avatars[post.author])),
+        owner: this._state.people[post.author]
       };
     }
     _render({user, metadata}, {posts, avatars}) {
@@ -223,16 +217,12 @@ defineParticle(({DomParticle, resolver, log}) => {
       const blogAvatarStyle = this._blogOwnerAvatarStyle(metadata, avatars);
       if (posts && posts.length > 0) {
         const sortedPosts = this._sortPostsByDateAscending(posts);
-        const viewingUserName = user.name;
-        const viewingUserAvatar = user ? resolver(avatars[user.id]) : '';
         const visible = this._views.get('posts').canWrite;
         return {
           hideZeroState: true,
           blogAuthor,
           blogAvatarStyle,
-          posts: sortedPosts.map(
-              p => this._postToModel(
-                  viewingUserName, viewingUserAvatar, visible, p))
+          posts: sortedPosts.map(p => this._postToModel(visible, p))
         };
       } else {
         return {hideZeroState: false, blogAuthor, blogAvatarStyle, posts: []};

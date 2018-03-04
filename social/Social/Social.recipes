@@ -25,6 +25,7 @@ recipe
   EditPost
     posts = posts
     post = post
+    user <- user
   ShowPosts
     posts = posts
     metadata = metadata
