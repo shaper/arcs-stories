@@ -13,11 +13,15 @@ defineParticle(({DomParticle, resolver, log}) => {
 
   const template = `
 <style>
-  [${host}] .material-icons.md-14 { font-size: 14px; }
+  [${host}] .material-icons.md-14 {
+    float: right;
+    margin-right: 1em;
+  }
   [${host}] {
     font-family: 'Google Sans', sans-serif;
     font-size: 16pt;
     color: rgba(0, 0, 0, 0.87);
+    border-top: 1px solid lightgrey;
   }
   [${host}] [msg] [avatar] {
     display: inline-block;
@@ -32,7 +36,6 @@ defineParticle(({DomParticle, resolver, log}) => {
   [${host}] [header] {
     background-color: white;
     border-bottom: 1px solid lightgrey;
-    border-top: 1px solid lightgrey;
     text-align: center;
   }
   [${host}] [header] [blogAvatar] {
@@ -87,14 +90,14 @@ defineParticle(({DomParticle, resolver, log}) => {
   }
 </style>
 <div ${host}>
-  <div header>
-    <!-- TODO(wkorman): Find a way to collapse this with position: sticky
-         and scroll position or similar. -->
+  <div header hidden="{{isAggregatedFeed}}">
     <div blogAvatar style='{{blogAvatarStyle}}'></div>
     <div blogAuthor>{{blogAuthor}}</div>
     <div blogDescription>Add a description</div>
   </div>
   <div zeroState hidden="{{hideZeroState}}">
+    <!-- TODO(wkorman): Show different zero-state text and maybe a link
+         to create a new arc when we're an aggregated feed. -->
     Get started by naming your miniblog & creating your first post!
   </div>
   <div postContent>
@@ -104,7 +107,7 @@ defineParticle(({DomParticle, resolver, log}) => {
         <div msg>
           <div title>
             <span avatar style='{{avatarStyle}}'></span><span owner>{{owner}}</span><span when>{{time}}</span>
-            <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">clear</i>
+            <i class="material-icons md-14" style%="{{style}}" value="{{id}}" on-click="_onClick">delete</i>
             <br>
           </div>
           <div content value="{{id}}">{{message}}</div>
@@ -161,21 +164,6 @@ defineParticle(({DomParticle, resolver, log}) => {
       if (targetPost)
         this._views.get('posts').remove(targetPost);
     }
-    _timeSince(time) {
-      let interval = Math.floor((Date.now() - time) / 1000);
-      if (interval < 60) {
-        return interval + ' seconds';
-      }
-      interval = Math.floor(interval / 60);
-      if (interval < 60) {
-        return interval + ' minutes';
-      }
-      interval = Math.floor(interval / 60);
-      if (interval < 24) {
-        return interval + ' hours';
-      }
-      return time;
-    }
     _avatarToStyle(url) {
       return `background: url('${
           url}') center no-repeat; background-size: cover;`;
@@ -205,7 +193,7 @@ defineParticle(({DomParticle, resolver, log}) => {
       return {
         message: post.message,
         id: post.id,
-        time: this._timeSince(post.createdTimestamp),
+        time: new Date(post.createdTimestamp).toLocaleDateString('en-US', {'month':'short', 'day':'numeric'}),
         style: {display: visible ? 'inline' : 'none'},
         avatarStyle:
             this._avatarToStyle(resolver(this._state.avatars[post.author])),
@@ -215,17 +203,21 @@ defineParticle(({DomParticle, resolver, log}) => {
     _render({user, metadata}, {posts, avatars}) {
       const blogAuthor = this._blogOwnerName(metadata);
       const blogAvatarStyle = this._blogOwnerAvatarStyle(metadata, avatars);
+      // TODO(wkorman): We'll be splitting the aggregated feed into its own
+      // particle soon, so the below flag is just an interim hack.
+      const isAggregatedFeed = !metadata;
       if (posts && posts.length > 0) {
         const sortedPosts = this._sortPostsByDateAscending(posts);
         const visible = this._views.get('posts').canWrite;
         return {
           hideZeroState: true,
+          isAggregatedFeed,
           blogAuthor,
           blogAvatarStyle,
           posts: sortedPosts.map(p => this._postToModel(visible, p))
         };
       } else {
-        return {hideZeroState: false, blogAuthor, blogAvatarStyle, posts: []};
+        return {hideZeroState: false, isAggregatedFeed, blogAuthor, blogAvatarStyle, posts: []};
       }
     }
   }
