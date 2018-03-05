@@ -19,15 +19,12 @@ defineParticle(({DomParticle}) => {
   border: none;
   font-family: 'Google Sans', sans-serif;
   font-size: 16pt;
+  /* TODO(wkorman|sjmiles): Rework in conjunction with DetailSlider to allow
+     something functionally like height: 100%. */
+  height: 300px;
+  width: 100%;
   outline: none;
   resize: none;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  width: 95%;
-  margin: 8px;
 }
 [${host}] {
   font-family: 'Google Sans', sans-serif;
@@ -36,7 +33,7 @@ defineParticle(({DomParticle}) => {
 [${host}] [post-buttons] {
   position: absolute;
   right: 8px;
-  top: -48px;
+  top: 8px;
 }
 [${host}] [post-buttons] i {
   border-radius: 100%;
