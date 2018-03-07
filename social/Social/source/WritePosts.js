@@ -19,7 +19,7 @@ defineParticle(({DomParticle, resolver, log}) => {
   background-color: white;
   cursor: pointer;
   position: fixed;
-  margin-left: 440px;
+  margin-left: 328px;
   bottom: 50px;
   padding: 8px;
   border-radius: 100%;
