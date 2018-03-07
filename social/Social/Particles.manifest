@@ -10,6 +10,7 @@ import 'https://$cdn/artifacts/People/Person.schema'
 import 'https://$cdn/artifacts/People/Avatar.schema'
 import 'Post.schema'
 import 'BlogMetadata.schema'
+import '../../words/Stats.schema'
 
 particle ShowPosts in 'source/ShowPosts.js'
   ShowPosts(inout [Post] posts, inout BlogMetadata metadata, in Person user, in [Person] people, in [Avatar] avatars)
@@ -17,7 +18,7 @@ particle ShowPosts in 'source/ShowPosts.js'
   description `show ${posts}`
 
 particle OnlyShowPosts in 'source/ShowPosts.js'
-  OnlyShowPosts(in [Post] posts, in Person user, in [Person] people, in [Avatar] avatars)
+  OnlyShowPosts(in [Post] posts, in [Stats] stats, in Person user, in [Person] people, in [Avatar] avatars)
   consume root
   description `show ${posts}`
 

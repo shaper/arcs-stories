@@ -234,7 +234,7 @@ defineParticle(({DomParticle, resolver}) => {
         const gameOver = tileBoard.applyMove(moveTiles);
         if (gameOver)
           info('Ending game.');
-        this._setStats(Scoring.applyMoveStats(props.stats, word, score));
+        this._setStats(Scoring.applyMoveStats(props.person, props.stats, word, score));
         this._setBoard({
           letters: tileBoard.toString(),
           shuffleAvailableCount: tileBoard.shuffleAvailableCount,

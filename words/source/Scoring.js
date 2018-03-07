@@ -76,7 +76,10 @@ class Scoring {
         `${stats.highestScoringWord} (${stats.highestScoringWordScore})` :
         '(none yet)';
   }
-  static applyMoveStats(stats, word, score) {
+  static scoreToMessage(stats) {
+    return `Words Puzzle Game Stats -- Highest scoring word: ${stats.highestScoringWord} (${stats.highestScoringWordScore}). Longest word: ${stats.longestWord} (${stats.longestWordScore}). Score: ${stats.score}. Moves: ${stats.moveCount}.`;
+  }
+  static applyMoveStats(user, stats, word, score) {
     let updatedValues = {
       highestScoringWord: stats.highestScoringWord,
       highestScoringWordScore: stats.highestScoringWordScore,
@@ -87,18 +90,25 @@ class Scoring {
 
     // Update highest scoring word if needed.
     if (!stats.highestScoringWord || stats.highestScoringWordScore < score) {
-      updatedValues['highestScoringWord'] = word;
-      updatedValues['highestScoringWordScore'] = score;
+      updatedValues.highestScoringWord = word;
+      updatedValues.highestScoringWordScore = score;
     }
 
     // Update longest word if needed.
     if (!stats.longestWord || stats.longestWord.length < word.length) {
-      updatedValues['longestWord'] = word;
-      updatedValues['longestWordScore'] = score;
+      updatedValues.longestWord = word;
+      updatedValues.longestWordScore = score;
     }
 
-    updatedValues['score'] = stats.score + score;
-    updatedValues['moveCount'] = stats.moveCount + 1;
+    updatedValues.score = stats.score + score;
+    updatedValues.moveCount = stats.moveCount + 1;
+
+    // Fill in the social post information as an interim way to display
+    // something in the aggregated social feed.
+    updatedValues.createdTimestamp = stats.startstamp;
+    updatedValues.message = Scoring.scoreToMessage(updatedValues);
+    updatedValues.author = user.id;
+
     return updatedValues;
   }
   static create() {
