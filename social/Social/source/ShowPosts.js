@@ -155,11 +155,12 @@ defineParticle(({DomParticle, resolver, log}) => {
       }
     }
     _willReceiveProps(props) {
-      if (props.posts) {
+      if (props.posts || props.stats) {
         this._initBlogMetadata(props);
         const metadataHandle = this._views.get('metadata');
+        const allPosts = (props.posts || []).concat(props.stats || []);
         this._setState({
-          posts: props.posts,
+          posts: allPosts,
           people: this._peopleSetToMap(props.people),
           avatars: this._avatarSetToMap(props.avatars),
         });
