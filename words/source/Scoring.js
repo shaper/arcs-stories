@@ -77,7 +77,11 @@ class Scoring {
         '(none yet)';
   }
   static scoreToMessage(stats) {
-    return `Words Puzzle Game Stats -- Highest scoring word: ${stats.highestScoringWord} (${stats.highestScoringWordScore}). Longest word: ${stats.longestWord} (${stats.longestWordScore}). Score: ${stats.score}. Moves: ${stats.moveCount}.`;
+    return `Words Puzzle Game Stats -- Highest scoring word: ${
+        stats.highestScoringWord} (${
+        stats.highestScoringWordScore}). Longest word: ${stats.longestWord} (${
+        stats.longestWordScore}). Score: ${stats.score}. Moves: ${
+        stats.moveCount}.`;
   }
   static applyMoveStats(user, stats, word, score) {
     let updatedValues = {
@@ -111,7 +115,15 @@ class Scoring {
 
     return updatedValues;
   }
-  static create() {
-    return {score: 0, moveCount: 0, startstamp: Date.now()};
+  static create(user) {
+    const now = Date.now();
+    return {
+      score: 0,
+      moveCount: 0,
+      startstamp: now,
+      author: user.id,
+      createdTimestamp: now,
+      message: 'Word Puzzle Game Stats - New game.'
+    };
   }
 }

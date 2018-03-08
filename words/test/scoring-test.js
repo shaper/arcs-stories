@@ -84,6 +84,16 @@ describe('Scoring', function() {
   });
 
   describe('#applyMoveStats()', function() {
+    const validateStats = (actual, expected) => {
+      var actualCopy = Object.assign({}, actual);
+      // TODO(wkorman): We hack in Post data currently. Revisit this and add
+      // specific relevant tests.
+      delete actualCopy.author;
+      delete actualCopy.createdTimestamp;
+      delete actualCopy.message;
+      assert.deepEqual(actualCopy, expected);
+    };
+
     it('should persist existing stats', function() {
       const stats = {
         highestScoringWord: 'highest',
@@ -94,8 +104,9 @@ describe('Scoring', function() {
         moveCount: 0,
         startstamp: 7331
       };
-      const actual = Scoring.applyMoveStats(stats, 'short', 38);
-      assert.deepEqual(actual, {
+      const user = { id: '42'};
+      const actual = Scoring.applyMoveStats(user, stats, 'short', 38);
+      validateStats(actual, {
         highestScoringWord: 'highest',
         highestScoringWordScore: 43,
         longestWord: 'longest',
@@ -116,8 +127,9 @@ describe('Scoring', function() {
         moveCount: 0,
         startstamp: 7331
       };
-      const actual = Scoring.applyMoveStats(stats, 'higher', 100);
-      assert.deepEqual(actual, {
+      const user = { id: '42'};
+      const actual = Scoring.applyMoveStats(user, stats, 'higher', 100);
+      validateStats(actual, {
         highestScoringWord: 'higher',
         highestScoringWordScore: 100,
         longestWord: 'longest',
@@ -138,8 +150,9 @@ describe('Scoring', function() {
         moveCount: 0,
         startstamp: 7331
       };
-      const actual = Scoring.applyMoveStats(stats, 'higher', 100);
-      assert.deepEqual(actual, {
+      const user = { id: '42'};
+      const actual = Scoring.applyMoveStats(user, stats, 'higher', 100);
+      validateStats(actual, {
         highestScoringWord: 'higher',
         highestScoringWordScore: 100,
         longestWord: 'longest',
@@ -160,8 +173,9 @@ describe('Scoring', function() {
         moveCount: 0,
         startstamp: 7331
       };
-      const actual = Scoring.applyMoveStats(stats, 'evenlonger', 23);
-      assert.deepEqual(actual, {
+      const user = { id: '42'};
+      const actual = Scoring.applyMoveStats(user, stats, 'evenlonger', 23);
+      validateStats(actual, {
         highestScoringWord: 'highest',
         highestScoringWordScore: 43,
         longestWord: 'evenlonger',
@@ -182,8 +196,9 @@ describe('Scoring', function() {
         moveCount: 0,
         startstamp: 7331
       };
-      const actual = Scoring.applyMoveStats(stats, 'evenlonger', 23);
-      assert.deepEqual(actual, {
+      const user = { id: '42'};
+      const actual = Scoring.applyMoveStats(user, stats, 'evenlonger', 23);
+      validateStats(actual, {
         highestScoringWord: 'highest',
         highestScoringWordScore: 43,
         longestWord: 'evenlonger',
@@ -204,8 +219,9 @@ describe('Scoring', function() {
         moveCount: 345,
         startstamp: 7331
       };
-      const actual = Scoring.applyMoveStats(stats, 'evenlonger', 2300);
-      assert.deepEqual(actual, {
+      const user = { id: '42'};
+      const actual = Scoring.applyMoveStats(user, stats, 'evenlonger', 2300);
+      validateStats(actual, {
         highestScoringWord: 'evenlonger',
         highestScoringWordScore: 2300,
         longestWord: 'evenlonger',
