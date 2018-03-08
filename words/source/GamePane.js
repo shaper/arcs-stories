@@ -256,8 +256,8 @@ defineParticle(({DomParticle, resolver}) => {
         propsBoard = TileBoard.create();
         this._setBoard(propsBoard);
       }
-      if (!props.stats)
-        this._setStats(Scoring.create());
+      if (!props.stats && props.person)
+        this._setStats(Scoring.create(props.person));
       // TODO(wkorman): Only construct tile board when none yet exists in state.
       const tileBoard = new TileBoard(propsBoard);
       tileBoard.chanceOfFireOnRefill = CHANCE_OF_FIRE_ON_REFILL;

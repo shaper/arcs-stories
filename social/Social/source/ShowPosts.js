@@ -158,7 +158,11 @@ defineParticle(({DomParticle, resolver, log}) => {
       if (props.posts || props.stats) {
         this._initBlogMetadata(props);
         const metadataHandle = this._views.get('metadata');
-        const allPosts = (props.posts || []).concat(props.stats || []);
+        // Filter posts with no time stamp, in case somehow people have for
+        // example old game stats that don't have a createdTimestamp written.
+        const allPosts = (props.posts || [])
+                             .concat(props.stats || [])
+                             .filter(p => p.createdTimestamp);
         this._setState({
           posts: allPosts,
           people: this._peopleSetToMap(props.people),
